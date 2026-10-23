@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ program.title }} | Global Dynamics Consulting{% endblock %}
+
+{% block body %}
+    {% include '_partials/_hero.html.twig' with {program: program} only %}
+
+    {% include '_partials/_bento.html.twig' only %}
+
+    {# Programme detail block #}
+    <section class="border-t border-slate-800/10 pt-16 pb-20" id="programmes">
+        <p class="text-xs font-semibold uppercase tracking-wider text-regal">Programme overview</p>
+        <h2 class="mt-4 text-2xl font-bold tracking-tight text-navy md:text-3xl">What this programme covers</h2>
+        {# Autoescaped. Never apply |raw to this field: it is user/admin-supplied text. #}
+        <div class="mt-6 max-w-3xl whitespace-pre-line leading-relaxed text-slate-600">{{ program.description }}</div>
+    </section>
+
+    {% include '_partials/_inquiry.html.twig' with {inquiryForm: inquiryForm} only %}
+{% endblock %}

@@ -1,0 +1,9 @@
+# Session-backed CSRF: works without JavaScript, which matters for a lead form
+# that must succeed in any browser. Do NOT move these to stateless_token_ids
+# unless a JS bundle is shipped that can fetch and inject the token.
+framework:
+    form:
+        csrf_protection:
+            token_id: submit
+
+    csrf_protection: ~

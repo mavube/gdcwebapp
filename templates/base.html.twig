@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Global Dynamics Consulting{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset("build/app.css") }}">
+</head>
+<body class="min-h-screen bg-canvas font-sans text-navy antialiased">
+
+    {# ---- 1. Global Layout Frame: sticky 80px nav, max-w-7xl anchor ---- #}
+    <header class="sticky top-0 z-50 h-20 border-b border-slate-800/10 bg-canvas/80 backdrop-blur-md">
+        <div class="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
+            <a href="{{ path("app_home") }}" class="text-base font-semibold tracking-tight text-navy">
+                Global Dynamics Consulting
+            </a>
+            <a href="#inquiry"
+               class="inline-flex items-center rounded-md bg-regal px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-regal focus-visible:ring-offset-2">
+                Request a consultation
+            </a>
+        </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-7xl px-6">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div role="status" class="mt-6 rounded-md border px-4 py-3 text-sm
+                     {{ label == "success" ? "border-regal/30 bg-regal/5 text-regal" : "border-red-300 bg-red-50 text-red-800" }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer class="mt-24 border-t border-slate-800/10">
+        <div class="mx-auto max-w-7xl px-6 py-10 text-xs tracking-wide text-slate-500">
+            &copy; {{ "now"|date("Y") }} Global Dynamics Consulting
+        </div>
+    </footer>
+</body>
+</html>

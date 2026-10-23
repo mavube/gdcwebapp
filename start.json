@@ -1,0 +1,41 @@
+{
+  "run": [
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "composer install --no-interaction --no-progress"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "npm install --silent && npm run build:css"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "php bin/console doctrine:schema:create --no-interaction || php bin/console doctrine:schema:update --force --no-interaction"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "php bin/console doctrine:fixtures:load --no-interaction"
+      }
+    },
+    {
+      "method": "shell.run",
+      "params": {
+        "message": "php -S 127.0.0.1:8000 -t public public/index.php"
+      }
+    },
+    {
+      "method": "browser.open",
+      "params": {
+        "uri": "http://127.0.0.1:8000",
+        "target": "_blank"
+      }
+    }
+  ]
+}
