@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --minify",
-    "watch:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --watch"
+    "watch:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --watch",
+    "build:js": "node -e \"require('fs').mkdirSync('public/build',{recursive:true});require('fs').copyFileSync('assets/funnel.js','public/build/funnel.js')\"",
+    "build": "npm run build:css && npm run build:js"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"

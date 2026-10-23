@@ -14,9 +14,9 @@
             <a href="{{ path("app_home") }}" class="text-base font-semibold tracking-tight text-navy">
                 Global Dynamics Consulting
             </a>
-            <a href="#inquiry"
+            <a href="#inquiry" data-funnel-open
                class="inline-flex items-center rounded-md bg-regal px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-regal focus-visible:ring-offset-2">
-                Request a consultation
+                Request Briefing
             </a>
         </div>
     </header>
@@ -39,5 +39,9 @@
             &copy; {{ "now"|date("Y") }} Global Dynamics Consulting
         </div>
     </footer>
+
+    {# ---- Conversion deck: present on every public page, opened on demand ---- #}
+    {% include "_partials/_funnel_deck.html.twig" %}
+    <script src="{{ asset("build/funnel.js") }}" defer></script>
 </body>
 </html>

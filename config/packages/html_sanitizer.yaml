@@ -1,0 +1,18 @@
+# Text sanitizer used by App\Service\InquirySanitizer.
+#
+# allow_safe_elements is the W3C "safe" baseline: scripts, iframes, styles and
+# every event handler are removed, javascript: URLs are stripped, and the text
+# inside an unwrapped inline tag is kept. Turning it off makes the default
+# action "drop", which deletes the element *and its text*, so "<b>Acme</b> Ltd"
+# would silently become " Ltd".
+#
+# The sanitizer output is plain text by the time it is stored: InquirySanitizer
+# strips tags after decoding. Do not render these values unescaped.
+framework:
+    html_sanitizer:
+        sanitizers:
+            gdc.text:
+                allow_safe_elements: true
+                allow_relative_links: false
+                allow_relative_medias: false
+                force_https_urls: true
