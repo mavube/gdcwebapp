@@ -49,6 +49,9 @@ class CourseInquiryType extends AbstractType
     {
         $resolver->setDefaults([
             "data_class" => CourseInquiry::class,
+            // The track form always knows its programme, so it validates with
+            // the "track" group in addition to the defaults.
+            "validation_groups" => ["Default", CourseInquiry::GROUP_TRACK],
         ]);
     }
 }

@@ -26,3 +26,9 @@ services:
     App\Controller\TrainingController:
         bind:
             $inquiryLimiter: '@limiter.inquiry'
+
+    # Bind the text sanitizer by name so adding another sanitizer configuration
+    # later cannot silently change which one this service receives.
+    App\Service\InquirySanitizer:
+        bind:
+            $textSanitizer: '@html_sanitizer.sanitizer.gdc.text'
