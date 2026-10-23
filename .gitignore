@@ -22,3 +22,7 @@
 ###> local databases ###
 /var/*.db
 ###< local databases ###
+
+###> symfony/framework-bundle (generated) ###
+/config/reference.php
+###< symfony/framework-bundle (generated) ###

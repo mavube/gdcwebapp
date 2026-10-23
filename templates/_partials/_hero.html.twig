@@ -1,0 +1,33 @@
+{# ---- 2. Universal Executive Hero: 60/40 asymmetric split ---- #}
+<section class="grid grid-cols-1 gap-12 pt-16 pb-20 md:grid-cols-5 md:gap-16">
+    {# Left: 60% text column (3 of 5) ---- #}
+    <div class="md:col-span-3">
+        <p class="text-xs font-semibold uppercase tracking-wider text-regal">
+            Global Dynamics Consulting &bull; Executive Development
+        </p>
+        <h1 class="mt-6 text-4xl font-bold leading-[1.05] tracking-tight text-navy md:text-6xl">
+            {{ program.title }} Certification &amp; Strategy
+        </h1>
+        <p class="mt-8 max-w-3xl text-lg leading-relaxed text-slate-600">
+            {{ program.tagline }}
+        </p>
+    </div>
+
+    {# Right: 40% telemetry widget (2 of 5) ---- #}
+    <aside class="md:col-span-2" aria-label="Programme details">
+        <dl class="divide-y divide-slate-800/10 border-y border-slate-800/10">
+            <div class="flex items-baseline justify-between py-4">
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total duration</dt>
+                <dd class="text-sm font-semibold text-navy">{{ program.duration }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between py-4">
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-500">PDU accumulation</dt>
+                <dd class="text-sm font-semibold text-navy">{{ program.pduCount }} PDUs</dd>
+            </div>
+            <div class="flex items-baseline justify-between py-4">
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-500">Delivery method</dt>
+                <dd class="text-sm font-semibold text-navy">{{ program.deliveryMethod }}</dd>
+            </div>
+        </dl>
+    </aside>
+</section>

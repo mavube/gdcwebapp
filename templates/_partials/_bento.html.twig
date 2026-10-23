@@ -1,0 +1,47 @@
+{# ---- 3. Solutions Bento Matrix: 3-col grid, asymmetric spans ---- #}
+<section class="pb-24" id="solutions">
+    <h2 class="text-2xl font-bold tracking-tight text-navy md:text-3xl">Corporate solutions</h2>
+    <p class="mt-3 max-w-3xl text-slate-600">A structured portfolio spanning certification, automation and mentorship.</p>
+
+    <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+        {# Card A: double-width - Training Pillar #}
+        {% include '_partials/_bento_card.html.twig' with {
+            span: 'md:col-span-2',
+            eyebrow: 'Certification',
+            title: 'The Training Pillar',
+            body: 'PMP and associated corporate development paths, delivered by practising programme leaders.',
+            cta: 'Explore training',
+            href: '#programmes'
+        } only %}
+
+        {# Card B: single-width - Operational Tech #}
+        {% include '_partials/_bento_card.html.twig' with {
+            span: '',
+            eyebrow: 'Automation',
+            title: 'Operational Tech',
+            body: 'ValueBlueprint® automations and strategic systems integration for delivery teams.',
+            cta: 'See integrations',
+            href: '#automation'
+        } only %}
+
+        {# Card C: single-width - Ecosystem Support #}
+        {% include '_partials/_bento_card.html.twig' with {
+            span: '',
+            eyebrow: 'Mentorship',
+            title: 'Ecosystem Support',
+            body: 'The PMPCitizen™ mentorship network, connecting practitioners across cohorts.',
+            cta: 'Join the network',
+            href: '#mentorship'
+        } only %}
+
+        {# Card D: double-width - Validation Records #}
+        {% include '_partials/_bento_card.html.twig' with {
+            span: 'md:col-span-2',
+            eyebrow: 'Case records',
+            title: 'Validation Records',
+            body: 'Active engagement telemetry from the EIST Technology and TASFAM project records.',
+            cta: 'Review records',
+            href: '#records'
+        } only %}
+    </div>
+</section>
