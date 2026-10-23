@@ -4,6 +4,29 @@ Symfony 7.4 LTS app for Global Dynamics Consulting ("GDC Web App"). Work is
 delivered in phases and each phase's brief is fed verbatim into the user's local
 Pinokio engine for generation.
 
+## PHP version: must run on 8.3
+
+This app is deployed on Laragon with **PHP 8.3**, which cannot be upgraded
+because other applications on that machine depend on it. The dependency set is
+therefore pinned to 8.3-compatible versions, and `composer.json` sets
+`config.platform.php = 8.3.16` so a later `composer update` cannot silently
+resolve to packages that require 8.4.
+
+Consequences for generated code:
+
+- Do not use PHP 8.4-only syntax or functions. This includes property hooks
+  (`public string $x { get => ... }`), asymmetric visibility (`private(set)`),
+  `array_find` / `array_find_key` / `array_any` / `array_all`, and the new
+  `mb_*` case helpers such as `mb_trim` and `mb_ucfirst`.
+- Do not raise the `php` requirement in `composer.json` above `>=8.2`.
+- Do not loosen these constraints: `doctrine/doctrine-bundle ^2`, 
+  `doctrine/doctrine-migrations-bundle ^3`, `phpunit/phpunit ^12`. Their next
+  major versions require PHP 8.4 and will break the Laragon deployment.
+
+If a dependency genuinely needs 8.4, upgrade Laragon first — do not use
+`--ignore-platform-reqs`, which hides the mismatch and moves the failure to
+runtime.
+
 ## Commands
 
 Run everything from the repository root; `bin/console` does not work from `/tmp`.
