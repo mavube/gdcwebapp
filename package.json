@@ -1,4 +1,11 @@
 {
+  "name": "gdc-web-app",
+  "description": "Corporate front-end for Global Dynamics Consulting",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --minify",
+    "watch:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --watch"
+  },
   "devDependencies": {
     "tailwindcss": "^3.4.17"
   }
