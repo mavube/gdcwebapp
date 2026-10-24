@@ -9,13 +9,13 @@
     {
       "method": "shell.run",
       "params": {
-        "message": "npm install --silent && npm run build:css"
+        "message": "npm install --silent && npm run build"
       }
     },
     {
       "method": "shell.run",
       "params": {
-        "message": "php bin/console doctrine:schema:create --no-interaction || php bin/console doctrine:schema:update --force --no-interaction"
+        "message": "php bin/console doctrine:migrations:migrate --no-interaction"
       }
     },
     {
