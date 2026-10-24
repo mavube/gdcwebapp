@@ -1,0 +1,106 @@
+{#
+    Home hero.
+
+    Composition follows the reference template: an asymmetric two-column split
+    (text left, media right), the headline's trailing phrase set in the accent
+    colour, a credibility row beneath the buttons, and a full-width figure strip
+    closing the fold.
+
+    Every string comes from a ContentBlock or a ContentItem. When a block is
+    missing the section renders without it rather than falling back to copy
+    baked into this file, which is the project's rule for editable content.
+#}
+{% set hero = blocks['home.hero']|default(null) %}
+
+<section class="ui-hero-wash" id="hero">
+    <div class="ui-container ui-section grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
+
+        {# ---- Text column ---- #}
+        <div class="flex flex-col justify-center">
+            {% if hero and hero.eyebrow %}
+                <p class="ui-type-label">{{ hero.eyebrow }}</p>
+            {% endif %}
+
+            {% if hero and hero.heading %}
+                <h1 class="ui-type-display mt-6 max-w-[42rem]">
+                    {{ hero.heading }}{% if hero.headingAccent %} <span class="text-accent">{{ hero.headingAccent }}</span>{% endif %}
+                </h1>
+            {% endif %}
+
+            {% if hero and hero.body %}
+                <p class="ui-type-lead mt-8 max-w-[38rem]">{{ hero.body }}</p>
+            {% endif %}
+
+            {% if hero and (hero.ctaLabel or hero.secondaryCtaLabel) %}
+                <div class="mt-10 flex flex-wrap items-center gap-3">
+                    {% if hero.ctaLabel %}
+                        {# "funnel" (or no target at all) opens the enquiry deck;
+                           anything else is a normal link. #}
+                        {% set primaryHref = hero.ctaTarget == 'funnel' ? null : gdc_link(hero.ctaTarget) %}
+                        {% if primaryHref %}
+                            <a href="{{ primaryHref }}" class="ui-button ui-button-primary"
+                               {% if gdc_is_external(hero.ctaTarget) %}target="_blank" rel="noreferrer"{% endif %}>{{ hero.ctaLabel }}</a>
+                        {% else %}
+                            <button type="button" data-funnel-open class="ui-button ui-button-primary">{{ hero.ctaLabel }}</button>
+                        {% endif %}
+                    {% endif %}
+                    {% if hero.secondaryCtaLabel %}
+                        {% set secondaryHref = gdc_link(hero.secondaryCtaTarget) %}
+                        {% if secondaryHref %}
+                            <a href="{{ secondaryHref }}" class="ui-button ui-button-outline">{{ hero.secondaryCtaLabel }}</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {# Credibility row: the organisations and standards behind the practice. #}
+            {% set trust = items['home.hero.trust']|default([]) %}
+            {% if trust|length > 0 %}
+                <div class="ui-trust-row" aria-label="{{ hero and hero.eyebrow ? hero.eyebrow : 'Credibility' }}">
+                    {% for item in trust %}
+                        <span class="ui-trust-item">{{ item.title }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {# ---- Media column ----
+           The reference clips the hero image to an organic shape. The project has
+           no licensed photography to place there yet, so this renders the branded
+           panel instead: the same footprint, so the fold keeps its proportion
+           once a real image is supplied through the admin. #}
+        <div class="relative min-h-[22rem] lg:min-h-[34rem]">
+            <div class="ui-media-tile h-full">
+                {% set heroImage = gdc_image(hero.image|default(null)) %}
+                {% if heroImage %}
+                    <img src="{{ heroImage }}" alt="{{ hero.imageAlt|default('') }}" loading="eager" width="900" height="1125">
+                {% else %}
+                    <div class="ui-media-placeholder">
+                        <p class="ui-type-label">{{ hero and hero.eyebrow ? hero.eyebrow : '' }}</p>
+                        <p class="font-heading text-lg font-bold text-brand-ink">
+                            {{ hero and hero.heading ? hero.heading : '' }}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ---- Figure strip ----
+         Closes the fold with the practice's own numbers. Omitted entirely when no
+         figures are published, rather than rendering an empty dark band. #}
+    {% set stats = items['home.hero.stats']|default([]) %}
+    {% if stats|length > 0 %}
+        <div class="ui-container">
+            <dl class="ui-stat-strip">
+                {% for stat in stats %}
+                    <div class="ui-stat">
+                        <dt class="sr-only">{{ stat.subtitle }}</dt>
+                        <dd class="ui-stat-value">{{ stat.title }}</dd>
+                        <dd class="ui-stat-label" aria-hidden="true">{{ stat.subtitle }}</dd>
+                    </div>
+                {% endfor %}
+            </dl>
+        </div>
+    {% endif %}
+</section>

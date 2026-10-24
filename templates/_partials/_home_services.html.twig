@@ -1,0 +1,79 @@
+{#
+    The offer, as numbered rows.
+
+    This is the reference's "our services" section: a header with a link to the
+    full list, then one row per offer carrying its number, name, a line of
+    description and an arrow.
+
+    The rows come from ContentItem, not from the Service entity, because this
+    section describes the *pillars* the practice sells (the broad offer) whereas
+    /services lists the individual programmes. Seeding points each row's link at
+    the matching pillar filter, so the two stay connected without duplicating
+    the catalogue here.
+
+    The number is the row's position, padded in the template rather than stored:
+    storing it would let the visible numbering drift out of step with the order
+    the rows actually appear in.
+#}
+{% set heading = blocks['home.services']|default(null) %}
+{% set services = items['home.services']|default([]) %}
+
+{% if heading or services|length > 0 %}
+    <section class="ui-section" id="services">
+        <div class="ui-container">
+            <div class="ui-section-head md:flex md:flex-row md:items-end md:justify-between md:gap-12">
+                <div class="max-w-2xl">
+                    {% if heading and heading.heading %}
+                        <h2 class="ui-section-title">{{ heading.heading }}</h2>
+                    {% endif %}
+                </div>
+                <div class="max-w-md">
+                    {% if heading and heading.body %}
+                        <p class="ui-type-lead">{{ heading.body }}</p>
+                    {% endif %}
+                    {% set headingHref = heading ? gdc_link(heading.ctaTarget) : null %}
+                    {% if heading and heading.ctaLabel and headingHref %}
+                        <a href="{{ headingHref }}" class="ui-link-arrow mt-4">
+                            {{ heading.ctaLabel }} <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-12 divide-y divide-brand-ink/10 border-y border-brand-ink/10">
+                {% for service in services %}
+                    {% set href = gdc_link(service.linkTarget) %}
+                    {% set number = '%02d.'|format(loop.index) %}
+
+                    {% if href %}
+                        <a href="{{ href }}" class="ui-numbered-row group"
+                           {% if gdc_is_external(service.linkTarget) %}target="_blank" rel="noreferrer"{% endif %}>
+                    {% else %}
+                        <div class="ui-numbered-row">
+                    {% endif %}
+
+                            <span class="ui-numbered-row-number">{{ number }}</span>
+
+                            <div>
+                                <h3 class="ui-type-title">{{ service.title }}</h3>
+                                {% if service.body %}
+                                    <p class="ui-type-body mt-2 text-sm">{{ service.body }}</p>
+                                {% endif %}
+                            </div>
+
+                            {% if href %}
+                                <span class="hidden size-11 items-center justify-center rounded-full border border-brand-ink/15
+                                             text-brand-ink transition-colors group-hover:border-brand group-hover:bg-brand group-hover:text-surface md:inline-flex"
+                                      aria-hidden="true">
+                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7v9"/>
+                                    </svg>
+                                </span>
+                            {% endif %}
+
+                    {% if href %}</a>{% else %}</div>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endif %}

@@ -1,12 +1,16 @@
-{# ---- 2. Universal Executive Hero: 60/40 asymmetric split ---- #}
+{# ---- Programme hero: 60/40 split, facts on the right ---- #}
+{# The framing line and the trailing phrase of the headline are editable. The
+   programme's own title comes from its record, so it is not duplicated here. #}
+{% set hero = blocks['training.hero']|default(null) %}
+
 <section class="ui-section grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
     {# Left: 60% text column (3 of 5) ---- #}
     <div class="md:col-span-3">
-        <p class="ui-type-label">
-            Global Dynamics Consulting &bull; Executive Development
-        </p>
+        {% if hero and hero.eyebrow %}
+            <p class="ui-type-label">{{ hero.eyebrow }}</p>
+        {% endif %}
         <h1 class="ui-type-display mt-6">
-            {{ program.title }} Certification &amp; Strategy
+            {{ program.title }}{% if hero and hero.headingAccent %} <span class="text-accent">{{ hero.headingAccent }}</span>{% endif %}
         </h1>
         <p class="ui-type-body mt-8 max-w-measure text-lg">
             {{ program.tagline }}

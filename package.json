@@ -5,7 +5,7 @@
   "scripts": {
     "build:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --minify",
     "watch:css": "tailwindcss -i assets/styles/app.css -o public/build/app.css --watch",
-    "build:js": "node -e \"require('fs').mkdirSync('public/build',{recursive:true});require('fs').copyFileSync('assets/funnel.js','public/build/funnel.js')\"",
+    "build:js": "node -e \"const fs=require('fs');fs.mkdirSync('public/build',{recursive:true});fs.copyFileSync('assets/funnel.js','public/build/funnel.js');fs.copyFileSync('assets/site.js','public/build/site.js')\"",
     "build": "npm run build:css && npm run build:js"
   },
   "devDependencies": {

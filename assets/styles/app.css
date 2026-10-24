@@ -171,6 +171,279 @@
             radial-gradient(60rem 32rem at 78% -8%, rgb(1 129 201 / 0.14), transparent 62%),
             radial-gradient(42rem 26rem at 4% 4%, rgb(236 118 0 / 0.09), transparent 58%);
     }
+
+    /* ---- Sections ported from the Nova composition ---- */
+
+    /* Section header: the title/description pair every new section opens with.
+       The left-aligned variant is used where a control sits beside the header,
+       the centred variant where the section stands alone. */
+    .ui-section-head {
+        @apply flex flex-col gap-4;
+    }
+
+    .ui-section-head-centered {
+        @apply mx-auto max-w-3xl items-center text-center;
+    }
+
+    .ui-section-title {
+        @apply font-heading text-headline font-bold text-brand-ink;
+    }
+
+    /* Lead paragraph: one step up from body, held to a comfortable measure. */
+    .ui-type-lead {
+        @apply text-lg leading-relaxed text-muted;
+    }
+
+    /* Text link with the trailing arrow. The arrow shifts on hover rather than
+       the whole label, matching the reference's motion contract. */
+    .ui-link-arrow {
+        @apply inline-flex items-center gap-2 font-heading text-sm font-semibold text-brand-ink
+               transition-colors duration-300 hover:text-brand
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2;
+    }
+
+    .ui-link-arrow span[aria-hidden="true"] {
+        @apply inline-block transition-transform duration-300 ease-out;
+    }
+
+    .ui-link-arrow:hover span[aria-hidden="true"] {
+        @apply translate-x-1;
+    }
+
+    /* Horizontal scroller. `scroll-snap` and a hidden scrollbar, with the
+       negative inset so cards bleed to the viewport edge on narrow screens. */
+    .ui-scroller {
+        @apply flex snap-x snap-mandatory gap-6 overflow-x-auto pb-8;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        touch-action: pan-x;
+    }
+
+    .ui-scroller::-webkit-scrollbar {
+        display: none;
+    }
+
+    .ui-scroller-item {
+        @apply shrink-0 snap-start;
+    }
+
+    /* Round carousel control. 44px square so it clears the minimum touch
+       target, which the design rules require. */
+    .ui-scroller-button {
+        @apply inline-flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full
+               border border-brand-ink/15 text-brand-ink transition-colors
+               hover:border-brand hover:bg-brand/5
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2;
+    }
+
+    /* Media tile: a fixed aspect box that holds either the image or, when the
+       editor has not supplied one, a branded panel. Both fill the tile, so the
+       row keeps its rhythm either way. */
+    .ui-media-tile {
+        @apply relative overflow-hidden rounded-panel bg-mist;
+    }
+
+    .ui-media-tile img {
+        @apply absolute inset-0 size-full object-cover transition-transform duration-500 ease-out;
+    }
+
+    .ui-media-tile:hover img {
+        @apply scale-105;
+    }
+
+    /* The stand-in used when a media-led row has no image yet. A soft brand
+       wash plus the row's own text, so the tile reads as deliberately
+       unfinished rather than broken. */
+    .ui-media-placeholder {
+        @apply absolute inset-0 flex flex-col justify-end gap-2 p-6;
+        background-image:
+            radial-gradient(28rem 20rem at 80% 0%, rgb(1 129 201 / 0.28), transparent 70%),
+            radial-gradient(20rem 16rem at 0% 100%, rgb(236 118 0 / 0.18), transparent 65%);
+    }
+
+    .ui-media-overlay {
+        @apply pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-ink/85 via-brand-ink/25 to-transparent;
+    }
+
+    /* Numbered offer row: number, title and description in one line, with the
+       arrow at the end. The rule between rows comes from the parent's divide. */
+    .ui-numbered-row {
+        @apply grid items-center gap-x-6 gap-y-3 py-8
+               md:grid-cols-[auto_minmax(0,1fr)_auto];
+    }
+
+    .ui-numbered-row-number {
+        @apply font-heading text-sm font-semibold tabular-nums text-accent;
+    }
+
+    /* Accordion entry. `details`/`summary` rather than script: it works with
+       no JavaScript, is keyboard operable, and respects find-in-page. */
+    .ui-disclosure {
+        @apply overflow-hidden rounded-card border border-brand-ink/10 bg-surface
+               transition-colors duration-300 open:border-brand-ink/20;
+    }
+
+    .ui-disclosure > summary {
+        @apply flex w-full cursor-pointer list-none items-center justify-between gap-6 px-6 py-6 text-left
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2;
+    }
+
+    .ui-disclosure > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .ui-disclosure-question {
+        @apply font-heading text-base font-semibold leading-snug text-brand-ink;
+    }
+
+    /* The plus sign rotates to a cross when the entry opens. */
+    .ui-disclosure-marker {
+        @apply flex size-8 shrink-0 items-center justify-center rounded-full border border-brand-ink/15
+               text-brand transition-transform duration-300;
+    }
+
+    .ui-disclosure[open] .ui-disclosure-marker {
+        @apply rotate-45;
+    }
+
+    /* Review card, as used in the scrolling columns. */
+    .ui-quote-card {
+        @apply flex shrink-0 flex-col gap-6 rounded-card border border-brand-ink/10 bg-surface p-7 shadow-soft;
+    }
+
+    .ui-quote-attribution {
+        @apply flex items-center gap-3;
+    }
+
+    /* Avatar: the portrait when supplied, otherwise the person's initials on a
+       brand tint. */
+    .ui-avatar {
+        @apply relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full
+               bg-brand/15 font-heading text-xs font-semibold text-brand;
+    }
+
+    .ui-avatar img {
+        @apply absolute inset-0 size-full object-cover;
+    }
+
+    /* The stacked avatars on the method panel, overlapping by a fixed step. */
+    .ui-avatar-stack {
+        @apply flex shrink-0 items-center;
+    }
+
+    .ui-avatar-stack > * + * {
+        @apply -ml-3;
+    }
+
+    .ui-avatar-stack img,
+    .ui-avatar-stack .ui-avatar {
+        @apply size-12 border-2 border-surface;
+    }
+
+    /* Tick row on the method panel. */
+    .ui-tick {
+        @apply grid size-8 shrink-0 place-items-center rounded-full bg-accent text-base font-bold leading-none text-surface;
+    }
+
+    /* Figure strip beneath the hero: a dark band with the figures in the accent. */
+    .ui-stat-strip {
+        @apply grid grid-cols-2 gap-y-8 rounded-t-panel bg-brand-ink px-6 py-10 text-surface md:grid-cols-4;
+    }
+
+    .ui-stat {
+        @apply relative flex flex-col items-center gap-1 px-4 text-center;
+    }
+
+    .ui-stat-value {
+        @apply font-heading text-2xl font-bold text-accent md:text-3xl;
+    }
+
+    .ui-stat-label {
+        @apply text-sm text-surface/75;
+    }
+
+    /* Hairline rules between the figures: vertical on wide screens, and on
+       narrow screens a vertical rule after each even cell plus a horizontal
+       rule under the first row. */
+    @media (min-width: 768px) {
+        .ui-stat + .ui-stat::before {
+            content: "";
+            position: absolute;
+            top: 25%;
+            bottom: 25%;
+            left: 0;
+            width: 1px;
+            background-color: currentColor;
+            opacity: 0.3;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .ui-stat:nth-child(even)::before {
+            content: "";
+            position: absolute;
+            top: 0.75rem;
+            bottom: 0.75rem;
+            left: 0;
+            width: 1px;
+            background-color: currentColor;
+            opacity: 0.3;
+        }
+
+        .ui-stat:nth-child(-n + 2)::after {
+            content: "";
+            position: absolute;
+            right: 0.75rem;
+            bottom: -1rem;
+            left: 0.75rem;
+            height: 1px;
+            background-color: currentColor;
+            opacity: 0.3;
+        }
+    }
+
+    /* Credibility row: a label followed by the names, spaced across the width. */
+    .ui-trust-row {
+        @apply flex flex-wrap items-center gap-x-8 gap-y-3 pt-6 text-brand-ink/50;
+    }
+
+    .ui-trust-item {
+        @apply font-heading text-sm font-semibold tracking-wide;
+    }
+}
+
+/*
+ * Review columns.
+ *
+ * The reference scrolls three columns of cards upward at different speeds so
+ * the block reads as a wall of feedback rather than a list. Each column holds
+ * three copies of its cards and translates by exactly one third, so the loop is
+ * seamless: at -33.333% copy two sits where copy one started.
+ *
+ * Declared outside @layer components because keyframes are not a component
+ * concern, and the reduced-motion escape below must be able to target these
+ * classes without layer-precedence ambiguity.
+ */
+@keyframes ui-review-scroll {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(0, -33.333333%, 0); }
+}
+
+.ui-review-track {
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+.ui-review-track-slow { animation: ui-review-scroll 18s linear infinite; }
+.ui-review-track-mid { animation: ui-review-scroll 14s linear infinite; }
+.ui-review-track-fast { animation: ui-review-scroll 12s linear infinite; }
+
+/* Pausing on hover lets a reader finish a quote they have started. */
+.ui-review-track:hover,
+.ui-review-track-slow:hover,
+.ui-review-track-mid:hover,
+.ui-review-track-fast:hover {
+    animation-play-state: paused;
 }
 
 /* Respect the user's motion preference: the template requires reduced-motion
@@ -179,6 +452,25 @@
     .ui-card-interactive,
     .ui-card-interactive:hover {
         transition: none;
+        transform: none;
+    }
+
+    /* The review wall becomes a plain vertical list: no loop, no clipping, so
+       every quote stays reachable. */
+    .ui-review-track,
+    .ui-review-track-slow,
+    .ui-review-track-mid,
+    .ui-review-track-fast {
+        animation: none;
+    }
+
+    .ui-media-tile img,
+    .ui-media-tile:hover img {
+        transition: none;
+        transform: none;
+    }
+
+    .ui-link-arrow:hover span[aria-hidden="true"] {
         transform: none;
     }
 }

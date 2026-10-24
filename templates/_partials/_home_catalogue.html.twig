@@ -1,0 +1,53 @@
+{#
+    The catalogue, grouped by pillar.
+
+    This is the lead's second step: the numbered rows above describe the broad
+    offer, and this section lists the individual programmes behind each one, so a
+    visitor who wants detail does not have to leave the page to find it.
+
+    The heading comes from the "home.pillars" block; the pillar names and
+    blurbs come from the Pillar enum, and the cards from the Service entity.
+    Nothing here is copy held in the template.
+#}
+<section class="ui-section bg-mist" id="solutions">
+    <div class="ui-container">
+        {% include '_partials/_section_heading.html.twig' with {blocks: blocks, key: 'home.pillars'} only %}
+
+        {% if grouped is empty %}
+            {# An editor can publish nothing while the catalogue is being
+               revised. Say so plainly rather than showing an empty grid. #}
+            <div class="mt-10 rounded-panel border border-brand/20 bg-brand/5 p-10">
+                <p class="ui-type-body max-w-measure">
+                    The catalogue is being finalised. Request a briefing and we will send the
+                    current programme list directly.
+                </p>
+                <button type="button" data-funnel-open class="ui-button ui-button-primary mt-6">
+                    Request a briefing
+                </button>
+            </div>
+        {% else %}
+            {% for pillar in pillars %}
+                {% set offers = grouped[pillar.value]|default([]) %}
+
+                {% if offers is not empty %}
+                    <div class="mt-16 border-t border-brand-ink/10 pt-12">
+                        <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+                            <h3 class="ui-type-headline">{{ pillar.label }}</h3>
+                            <p class="text-sm text-muted">{{ offers|length }} {{ offers|length == 1 ? 'programme' : 'programmes' }}</p>
+                        </div>
+                        <p class="ui-type-body mt-4 max-w-measure">{{ pillar.blurb }}</p>
+
+                        <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                            {% for service in offers %}
+                                {% include '_partials/_service_card.html.twig' with {
+                                    service: service,
+                                    span: service.featured ? 'md:col-span-2' : ''
+                                } only %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</section>

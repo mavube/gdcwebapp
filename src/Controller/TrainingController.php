@@ -6,6 +6,8 @@ namespace App\Controller;
 
 use App\Entity\CourseInquiry;
 use App\Form\CourseInquiryType;
+use App\Repository\ContentBlockRepository;
+use App\Repository\ContentItemRepository;
 use App\Repository\TrainingProgramRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,8 +19,12 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TrainingController extends AbstractController
 {
     #[Route("/training/{slug}", name: "app_training_show", methods: ["GET"], requirements: ["slug" => "[a-z0-9-]+"])]
-    public function show(string $slug, TrainingProgramRepository $repository): Response
-    {
+    public function show(
+        string $slug,
+        TrainingProgramRepository $repository,
+        ContentBlockRepository $blocks,
+        ContentItemRepository $items,
+    ): Response {
         $program = $repository->findOneBy(["slug" => $slug]);
 
         if (!$program) {
@@ -34,6 +40,10 @@ final class TrainingController extends AbstractController
         return $this->render("training/show.html.twig", [
             "program" => $program,
             "inquiryForm" => $form,
+            // The solution cards and their heading are editable content, so the
+            // page renders them from the same sources the home page uses.
+            "blocks" => $blocks->findActiveKeyed(),
+            "items" => $items->findActiveGroupedBySection(),
         ]);
     }
 
@@ -42,6 +52,8 @@ final class TrainingController extends AbstractController
         string $slug,
         Request $request,
         TrainingProgramRepository $repository,
+        ContentBlockRepository $blocks,
+        ContentItemRepository $items,
         EntityManagerInterface $em,
         RateLimiterFactory $inquiryLimiter,
     ): Response {
@@ -74,6 +86,8 @@ final class TrainingController extends AbstractController
         return $this->render("training/show.html.twig", [
             "program" => $program,
             "inquiryForm" => $form,
+            "blocks" => $blocks->findActiveKeyed(),
+            "items" => $items->findActiveGroupedBySection(),
         ], new Response(null, Response::HTTP_UNPROCESSABLE_ENTITY));
     }
 }

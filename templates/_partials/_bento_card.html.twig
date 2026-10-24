@@ -1,11 +1,16 @@
 {# Bento card. One shared hover contract (.ui-card-interactive) rather than
-   per-card animation, so every interactive card behaves identically. #}
+   per-card animation, so every interactive card behaves identically.
+
+   The link is optional: a card whose row names no destination is a plain card
+   rather than one pointing at a dead anchor. #}
 <article class="ui-card ui-card-interactive {{ span }}">
-    <p class="ui-type-label">{{ eyebrow }}</p>
+    {% if eyebrow %}<p class="ui-type-label">{{ eyebrow }}</p>{% endif %}
     <h3 class="ui-type-title mt-4">{{ title }}</h3>
-    <p class="ui-type-body mt-3 flex-1 text-sm">{{ body }}</p>
-    <a href="{{ href }}"
-       class="mt-6 inline-flex items-center gap-1 font-heading text-sm font-semibold text-brand transition-[letter-spacing] hover:tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-        {{ cta }} <span aria-hidden="true">&rarr;</span>
-    </a>
+    {% if body %}<p class="ui-type-body mt-3 flex-1 text-sm">{{ body }}</p>{% endif %}
+    {% if href and cta %}
+        <a href="{{ href }}"
+           class="mt-6 inline-flex items-center gap-1 font-heading text-sm font-semibold text-brand transition-[letter-spacing] hover:tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+            {{ cta }} <span aria-hidden="true">&rarr;</span>
+        </a>
+    {% endif %}
 </article>

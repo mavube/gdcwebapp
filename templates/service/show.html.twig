@@ -4,6 +4,11 @@
 {% block description %}{{ service.tagline }}{% endblock %}
 
 {% block body %}
+    {# The labels around the record's own fields are editable blocks. #}
+    {% set overview = blocks['service.overview']|default(null) %}
+    {% set siblingsPanel = blocks['service.siblings']|default(null) %}
+    {% set closing = blocks['service.closing']|default(null) %}
+
     {# ---- Service hero: 60/40 split, facts on the right ---- #}
     <section class="ui-hero-wash">
         <div class="ui-container ui-section grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
@@ -29,7 +34,10 @@
                     <button type="button" data-funnel-open class="ui-button ui-button-primary">
                         {{ service.ctaLabel }}
                     </button>
-                    <a href="#overview" class="ui-button ui-button-outline">Read the overview</a>
+                    {% set overviewHref = overview ? gdc_link(overview.secondaryCtaTarget) : null %}
+                    {% if overview and overview.secondaryCtaLabel and overviewHref %}
+                        <a href="{{ overviewHref }}" class="ui-button ui-button-outline">{{ overview.secondaryCtaLabel }}</a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -79,8 +87,8 @@
     <section class="ui-section" id="overview">
         <div class="ui-container grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
             <div class="md:col-span-2">
-                <p class="ui-type-label">Overview</p>
-                <h2 class="ui-type-headline mt-4">What this programme covers</h2>
+                {% if overview and overview.eyebrow %}<p class="ui-type-label">{{ overview.eyebrow }}</p>{% endif %}
+                {% if overview and overview.heading %}<h2 class="ui-type-headline mt-4">{{ overview.heading }}</h2>{% endif %}
             </div>
             <div class="md:col-span-3">
                 {# Autoescaped. Never apply |raw to this field: it is admin-supplied text. #}
@@ -94,7 +102,7 @@
         <section class="ui-section bg-mist">
             <div class="ui-container">
                 <p class="ui-type-label">Also in {{ service.pillar.shortLabel }}</p>
-                <h2 class="ui-type-headline mt-4">Related programmes</h2>
+                {% if siblingsPanel and siblingsPanel.heading %}<h2 class="ui-type-headline mt-4">{{ siblingsPanel.heading }}</h2>{% endif %}
 
                 <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
                     {% for sibling in siblings %}
@@ -110,10 +118,12 @@
         <div class="ui-container ui-section">
             <div class="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Next step</p>
-                    <h2 class="mt-4 font-heading text-headline font-bold text-surface max-w-2xl">
-                        Ready to talk through {{ service.title }}?
-                    </h2>
+                    {% if closing and closing.eyebrow %}<p class="text-label font-semibold uppercase tracking-widest text-surface/60">{{ closing.eyebrow }}</p>{% endif %}
+                    {% if closing and closing.body %}
+                        <h2 class="mt-4 font-heading text-headline font-bold text-surface max-w-2xl">
+                            {{ closing.body }}
+                        </h2>
+                    {% endif %}
                 </div>
                 <button type="button" data-funnel-open class="ui-button ui-button-accent shrink-0">
                     {{ service.ctaLabel }}
