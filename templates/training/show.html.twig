@@ -8,11 +8,11 @@
     {% include '_partials/_bento.html.twig' only %}
 
     {# Programme detail block #}
-    <section class="border-t border-slate-800/10 pt-16 pb-20" id="programmes">
-        <p class="text-xs font-semibold uppercase tracking-wider text-regal">Programme overview</p>
-        <h2 class="mt-4 text-2xl font-bold tracking-tight text-navy md:text-3xl">What this programme covers</h2>
+    <section class="ui-section border-t border-navy/10" id="programmes">
+        <p class="ui-type-label">Programme overview</p>
+        <h2 class="ui-type-headline mt-4">What this programme covers</h2>
         {# Autoescaped. Never apply |raw to this field: it is user/admin-supplied text. #}
-        <div class="mt-6 max-w-3xl whitespace-pre-line leading-relaxed text-slate-600">{{ program.description }}</div>
+        <div class="ui-type-body mt-6 max-w-measure whitespace-pre-line">{{ program.description }}</div>
     </section>
 
     {% include '_partials/_inquiry.html.twig' with {inquiryForm: inquiryForm} only %}

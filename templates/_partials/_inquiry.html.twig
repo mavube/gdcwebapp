@@ -1,61 +1,60 @@
 {# ---- 4. Inquiry module: the conversion surface ---- #}
-<section class="border-t border-slate-800/10 pt-16 pb-24" id="inquiry">
+<section class="ui-section border-t border-navy/10" id="inquiry">
     <div class="grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
         <div class="md:col-span-2">
-            <p class="text-xs font-semibold uppercase tracking-wider text-regal">Next step</p>
-            <h2 class="mt-4 text-2xl font-bold leading-tight tracking-tight text-navy md:text-3xl">
+            <p class="ui-type-label">Next step</p>
+            <h2 class="ui-type-headline mt-4">
                 Request a quotation or book a meeting
             </h2>
-            <p class="mt-4 max-w-3xl text-slate-600">
+            <p class="ui-type-body mt-5 max-w-measure">
                 Tell us what your team needs. A consultant will respond within one business day.
             </p>
         </div>
 
         <div class="md:col-span-3">
             {% if inquiryForm is defined %}
-                {{ form_start(inquiryForm, {attr: {class: 'space-y-5', novalidate: 'novalidate'}}) }}
+                {{ form_start(inquiryForm, {attr: {class: 'space-y-6', novalidate: 'novalidate'}}) }}
 
                     {% if inquiryForm.vars.submitted and not inquiryForm.vars.valid %}
-                        <div role="alert" class="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        <div role="alert" class="rounded-field border border-danger/30 bg-danger/5 px-5 py-4 text-sm text-danger">
                             Please correct the highlighted fields and try again.
                         </div>
                     {% endif %}
 
-                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         {% for field in [inquiryForm.fullName, inquiryForm.companyName] %}
                             <div>
-                                {{ form_label(field, null, {label_attr: {class: 'block text-sm font-medium text-navy'}}) }}
-                                {{ form_widget(field, {attr: {class: 'mt-1 block w-full rounded-md border border-slate-800/20 bg-white px-3 py-2 text-sm text-navy focus:border-regal focus:outline-none focus:ring-1 focus:ring-regal'}}) }}
-                                {{ form_errors(field, {attr: {class: 'mt-1 text-xs text-red-700'}}) }}
+                                {{ form_label(field, null, {label_attr: {class: 'ui-form-label'}}) }}
+                                {{ form_widget(field, {attr: {class: 'ui-form-input'}}) }}
+                                {{ form_errors(field, {attr: {class: 'mt-1 text-xs text-danger'}}) }}
                             </div>
                         {% endfor %}
                     </div>
 
-                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         {% for field in [inquiryForm.email, inquiryForm.phone] %}
                             <div>
-                                {{ form_label(field, null, {label_attr: {class: 'block text-sm font-medium text-navy'}}) }}
-                                {{ form_widget(field, {attr: {class: 'mt-1 block w-full rounded-md border border-slate-800/20 bg-white px-3 py-2 text-sm text-navy focus:border-regal focus:outline-none focus:ring-1 focus:ring-regal'}}) }}
-                                {{ form_errors(field, {attr: {class: 'mt-1 text-xs text-red-700'}}) }}
+                                {{ form_label(field, null, {label_attr: {class: 'ui-form-label'}}) }}
+                                {{ form_widget(field, {attr: {class: 'ui-form-input'}}) }}
+                                {{ form_errors(field, {attr: {class: 'mt-1 text-xs text-danger'}}) }}
                             </div>
                         {% endfor %}
                     </div>
 
-                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         {% for field in [inquiryForm.inquiryType, inquiryForm.preferredDate] %}
                             <div>
-                                {{ form_label(field, null, {label_attr: {class: 'block text-sm font-medium text-navy'}}) }}
-                                {{ form_widget(field, {attr: {class: 'mt-1 block w-full rounded-md border border-slate-800/20 bg-white px-3 py-2 text-sm text-navy focus:border-regal focus:outline-none focus:ring-1 focus:ring-regal'}}) }}
-                                {{ form_errors(field, {attr: {class: 'mt-1 text-xs text-red-700'}}) }}
+                                {{ form_label(field, null, {label_attr: {class: 'ui-form-label'}}) }}
+                                {{ form_widget(field, {attr: {class: 'ui-form-input'}}) }}
+                                {{ form_errors(field, {attr: {class: 'mt-1 text-xs text-danger'}}) }}
                             </div>
                         {% endfor %}
                     </div>
 
-                    {{ form_row(inquiryForm.trainingProgram, {label_attr: {class: 'block text-sm font-medium text-navy'}, attr: {class: 'mt-1 block w-full rounded-md border border-slate-800/20 bg-white px-3 py-2 text-sm text-navy focus:border-regal focus:outline-none focus:ring-1 focus:ring-regal'}}) }}
+                    {{ form_row(inquiryForm.trainingProgram, {label_attr: {class: 'ui-form-label'}, attr: {class: 'ui-form-input'}}) }}
 
                     <div>
-                        <button type="submit"
-                                class="inline-flex items-center rounded-md bg-regal px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-regal focus-visible:ring-offset-2">
+                        <button type="submit" class="ui-button ui-button-primary">
                             Send request
                         </button>
                     </div>

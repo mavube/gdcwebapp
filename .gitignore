@@ -26,3 +26,6 @@
 ###> symfony/framework-bundle (generated) ###
 /config/reference.php
 ###< symfony/framework-bundle (generated) ###
+
+# Agent scratch space
+/.agents_tmp/
