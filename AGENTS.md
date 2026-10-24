@@ -231,8 +231,21 @@ silently buy the individual-track exemptions.
   env -u DATABASE_URL APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
   ```
 
-  Without this the suite fails with `no such table: gdc_admin_users`. Re-running
-  it is safe; it is a no-op once the schema is current.
+  Without this the suite fails with `no such table: gdc_admin_users`.
+- Migrating the test env can itself fail on a *stale* `var/test.db` — one that
+  already has the tables but no `doctrine_migration_versions` rows (typically
+  left over from an earlier phase whose schema was created outside the migration
+  system). It then tries to re-apply the first migration and dies with
+  `The table with name "gdc_training_programs" already exists.` A test database
+  holds nothing worth keeping, so delete the file and migrate fresh:
+
+  ```bash
+  rm var/test.db                                   # PowerShell: Remove-Item var\test.db
+  env -u DATABASE_URL APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+  ```
+
+  If the file must be kept, stamp its existing schema as applied instead:
+  `php bin/console doctrine:migrations:version --add --all --no-interaction --env=test`.
 - The rate limiter is backed by `cache.rate_limiter`, which persists across
   tests. Clear that pool between tests or the sixth submission in a suite gets a
   `429`.
