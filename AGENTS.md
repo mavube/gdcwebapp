@@ -222,6 +222,30 @@ silently buy the individual-track exemptions.
 
 ## Testing notes
 
+- The first run on a fresh clone needs the test schema, because `var/test.db` is
+  git-ignored and PHPUnit does not create it. `doctrine:database:create` does
+  **not** work for SQLite ("Operation ... is not supported by platform"), and
+  the driver creates the *file* on connect but not the tables. Migrate instead:
+
+  ```bash
+  env -u DATABASE_URL APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+  ```
+
+  Without this the suite fails with `no such table: gdc_admin_users`.
+- Migrating the test env can itself fail on a *stale* `var/test.db` — one that
+  already has the tables but no `doctrine_migration_versions` rows (typically
+  left over from an earlier phase whose schema was created outside the migration
+  system). It then tries to re-apply the first migration and dies with
+  `The table with name "gdc_training_programs" already exists.` A test database
+  holds nothing worth keeping, so delete the file and migrate fresh:
+
+  ```bash
+  rm var/test.db                                   # PowerShell: Remove-Item var\test.db
+  env -u DATABASE_URL APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+  ```
+
+  If the file must be kept, stamp its existing schema as applied instead:
+  `php bin/console doctrine:migrations:version --add --all --no-interaction --env=test`.
 - The rate limiter is backed by `cache.rate_limiter`, which persists across
   tests. Clear that pool between tests or the sixth submission in a suite gets a
   `429`.
@@ -243,3 +267,49 @@ silently buy the individual-track exemptions.
 
   It must print `var/test.db`. `debug:config doctrine dbal` does **not** reveal
   this — it prints the unresolved `%env(resolve:DATABASE_URL)%` placeholder.
+
+## Editable content (the CMS)
+
+Every visitor-facing string on the public site comes from the database, not from
+a template. That is the project's central rule, and the reason the Phase 5 layout
+work is structured the way it is.
+
+Two tables back it:
+
+- `ContentBlock` — one row per named slot, keyed by a string (`home.hero`,
+  `training.inquiry`, `service.closing`). Holds the single-value fields:
+  eyebrow, heading, headingAccent, body, ctaLabel/ctaTarget,
+  secondaryCtaLabel/secondaryCtaTarget, image/imageAlt.
+- `ContentItem` — repeatable rows, grouped by `ContentSection`
+  (`home.faq`, `home.work`, `site.nav`, `training.solutions`, …). Holds
+  title/subtitle/body/linkLabel/linkTarget/sortOrder. Adding a row is an admin
+  edit, not a migration.
+
+Controllers pass two maps into every template that renders content:
+`blocks` (from `ContentBlockRepository::findActiveKeyed()`, keyed by block key)
+and `items` (from `ContentItemRepository::findActiveGroupedBySection()`, keyed by
+section value). Both are memoised per request. The shell (header/footer) reaches
+the same data through `gdc_site_block()` / `gdc_site_content()` in
+`SiteContentExtension`.
+
+Consequences worth knowing before editing a template:
+
+- **A missing block or an empty section renders nothing.** There is no fallback
+  copy baked into the Twig. This is deliberate: it is what makes the page
+  genuinely editable, and it is what the tests assert. Do not "helpfully" add a
+  default string — that reintroduces the hardcoded copy the phase removed.
+- **Never assert on fixture wording in a test.** Seed the block or row the test
+  needs. A test that depends on what the fixtures happen to say fails for the
+  wrong reason the first time an editor rewords the page.
+- **`gdc_link()` resolves a stored target.** Empty → null, `#anchor` and `/path`
+  pass through, any explicit scheme (`https:`, `tel:`, `mailto:`) passes through,
+  `route:name` is generated, and anything else is treated as a service slug.
+  Contact rows use `tel:`/`mailto:`; without the scheme branch they would resolve
+  to a dead `/services/tel:...` path.
+- **Adding an editable section** means a new `ContentSection` case (with its
+  label and hint), rows in `ContentItemFixtures`, and the template reading it.
+  No migration is required.
+- The editor lives at `/admin/content`, gated by the `^/admin` access rule.
+
+`tests/HomeLayoutTest.php` is the reference for how these pieces are exercised:
+it drives the real admin form to prove an edit reaches the page.

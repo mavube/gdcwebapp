@@ -14,8 +14,12 @@
 </head>
 <body class="flex min-h-screen flex-col bg-surface font-sans text-brand-ink antialiased">
 
-    {# ---- 1. Global layout frame ---- #}
-    <header class="sticky top-0 z-50 border-b border-brand-ink/10 bg-surface/90 backdrop-blur-md">
+    {# ---- 1. Global layout frame ----
+       A floating bar: transparent over the top of the page, then solid with a
+       hairline once the page is scrolled. The toggle is driven by a class the
+       script below sets, so the bar is fully styled and legible without
+       JavaScript: the default is the solid state. #}
+    <header id="site-header" class="sticky top-0 z-50 border-b border-transparent bg-surface/0 transition-colors duration-300">
         <div class="ui-container flex h-20 items-center justify-between gap-6">
             <a href="{{ path("app_home") }}" class="flex shrink-0 items-center gap-3" aria-label="Global Dynamics Consulting, home">
                 {# The brand mark. The uploaded asset is a white knockout, so it is
@@ -35,17 +39,29 @@
             </a>
 
             <nav class="hidden items-center gap-8 lg:flex" aria-label="Primary">
-                <a href="{{ path("app_service_index") }}" class="text-sm font-medium text-muted transition-colors hover:text-brand">Services</a>
-                <a href="{{ path("app_home") }}#approach" class="text-sm font-medium text-muted transition-colors hover:text-brand">Approach</a>
-                <a href="{{ path("app_home") }}#contact" class="text-sm font-medium text-muted transition-colors hover:text-brand">Contact</a>
+                {% for link in gdc_site_items('site.nav') %}
+                    {% set href = gdc_link(link.linkTarget) %}
+                    {% if href %}
+                        <a href="{{ href }}" class="text-sm font-medium text-muted transition-colors hover:text-brand"
+                           {% if gdc_is_external(link.linkTarget) %}target="_blank" rel="noreferrer"{% endif %}>{{ link.title }}</a>
+                    {% endif %}
+                {% endfor %}
             </nav>
 
             <div class="flex items-center gap-3">
-                <a href="tel:+255753000360" class="hidden text-sm font-semibold text-brand-ink transition-colors hover:text-brand md:block">
-                    +255 753 000 360
-                </a>
+                {% set phone = null %}
+                {% for channel in gdc_site_items('site.contact') %}
+                    {% if phone is null and channel.linkTarget and channel.linkTarget starts with 'tel:' %}
+                        {% set phone = channel %}
+                    {% endif %}
+                {% endfor %}
+                {% if phone %}
+                    <a href="{{ phone.linkTarget }}" class="hidden text-sm font-semibold text-brand-ink transition-colors hover:text-brand md:block">
+                        {{ phone.subtitle }}
+                    </a>
+                {% endif %}
                 <button type="button" data-funnel-open class="ui-button ui-button-primary">
-                    Request briefing
+                    {{ gdc_site_block('site.header.cta').ctaLabel|default('Request briefing') }}
                 </button>
             </div>
         </div>
@@ -66,40 +82,74 @@
         {% block body %}{% endblock %}
     </main>
 
-    {# ---- Footer: the dark band, where the white knockout mark is legible ---- #}
+    {# ---- Footer: the dark band, where the white knockout mark is legible ----
+       Every string comes from the admin: the blurb from a block, the link
+       columns and the legal line from content rows. A column with no rows is
+       omitted rather than rendered as an empty heading. #}
     <footer class="ui-band-ink mt-24">
         <div class="ui-container grid grid-cols-1 gap-12 py-16 md:grid-cols-4">
             <div class="md:col-span-2">
                 <img src="{{ asset("images/gdc-logo-white.png") }}" alt="Global Dynamics Consulting" class="h-10 w-auto">
-                <p class="mt-5 max-w-measure text-sm leading-relaxed text-surface/70">
-                    Empowering businesses and professionals with training, business solutions and
-                    strategic consulting, aligning People, Processes and Purpose for Value (APPPV®).
-                </p>
+                {% set blurb = gdc_site_block('site.footer.blurb') %}
+                {% if blurb and blurb.body %}
+                    <p class="mt-5 max-w-measure text-sm leading-relaxed text-surface/70">{{ blurb.body }}</p>
+                {% endif %}
             </div>
 
-            <div>
-                <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Company</p>
-                <ul class="mt-5 space-y-3 text-sm">
-                    <li><a href="{{ path("app_service_index") }}" class="text-surface/80 transition-colors hover:text-accent">Services</a></li>
-                    <li><a href="{{ path("app_home") }}#approach" class="text-surface/80 transition-colors hover:text-accent">Approach</a></li>
-                    <li><a href="{{ path("app_home") }}#contact" class="text-surface/80 transition-colors hover:text-accent">Contact</a></li>
-                </ul>
-            </div>
+            {% set footerLinks = gdc_site_items('site.footer.links') %}
+            {% if footerLinks|length > 0 %}
+                <div>
+                    <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Company</p>
+                    <ul class="mt-5 space-y-3 text-sm">
+                        {% for link in footerLinks %}
+                            {% set href = gdc_link(link.linkTarget) %}
+                            {% if href %}
+                                <li>
+                                    <a href="{{ href }}" class="text-surface/80 transition-colors hover:text-accent"
+                                       {% if gdc_is_external(link.linkTarget) %}target="_blank" rel="noreferrer"{% endif %}>{{ link.title }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
-            <div>
-                <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Contact</p>
-                <ul class="mt-5 space-y-3 text-sm text-surface/80">
-                    <li>Mikocheni B, Light Industrial Street, House #8<br>Dar es Salaam, Tanzania</li>
-                    <li><a href="tel:+255753000360" class="transition-colors hover:text-accent">+255 753 000 360</a></li>
-                    <li><a href="mailto:info@gdc.co.tz" class="transition-colors hover:text-accent">info@gdc.co.tz</a></li>
-                </ul>
-            </div>
+            {% set contact = gdc_site_items('site.contact') %}
+            {% if contact|length > 0 %}
+                <div>
+                    <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Contact</p>
+                    <ul class="mt-5 space-y-3 text-sm text-surface/80">
+                        {% for channel in contact %}
+                            <li>
+                                {% set channelHref = gdc_link(channel.linkTarget) %}
+                                {% if channelHref %}
+                                    <a href="{{ channelHref }}" class="transition-colors hover:text-accent">{{ channel.subtitle }}</a>
+                                {% else %}
+                                    {{ channel.subtitle }}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         </div>
 
         <div class="border-t border-surface/15">
             <div class="ui-container flex flex-col gap-3 py-6 text-xs text-surface/60 sm:flex-row sm:items-center sm:justify-between">
-                <p>&copy; {{ "now"|date("Y") }} Global Dynamics Consulting. All rights reserved.</p>
-                <p>PMI, PMP, PMBOK and ATP are registered marks of the Project Management Institute, Inc.</p>
+                {% set legal = gdc_site_items('site.legal') %}
+                {% if legal|length > 0 %}
+                    {% for line in legal %}
+                        <p>
+                            {{ line.body }}
+                            {% if line.linkLabel and line.linkTarget %}
+                                <a href="{{ gdc_link(line.linkTarget) }}" class="transition-colors hover:text-accent"
+                                   {% if gdc_is_external(line.linkTarget) %}target="_blank" rel="noreferrer"{% endif %}>{{ line.linkLabel }}</a>
+                            {% endif %}
+                        </p>
+                    {% endfor %}
+                {% else %}
+                    <p>&copy; {{ "now"|date("Y") }} Global Dynamics Consulting. All rights reserved.</p>
+                {% endif %}
             </div>
         </div>
     </footer>
@@ -112,6 +162,7 @@
        JSON_HEX_TAG escapes "<" and ">", without which admin-supplied copy
        containing "</script>" would close this block and inject markup. #}
     <script id="funnel-config" type="application/json">{{ gdc_funnel_config(deckService|default(null))|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT'))|raw }}</script>
+    <script src="{{ asset("build/site.js") }}" defer></script>
     <script src="{{ asset("build/funnel.js") }}" defer></script>
 </body>
 </html>

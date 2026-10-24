@@ -1,166 +1,30 @@
+{#
+    Home page.
+
+    Composition follows the reference template's own home page, in its order:
+    hero, selected engagements, the numbered offer, the method panel, questions,
+    reviews, then the closing call to action. The programme catalogue sits
+    between the offer and the method panel so the seven programmes stay one
+    scroll from the fold rather than behind a navigation click.
+
+    Every section is optional. Each partial tests for its own block or rows and
+    renders nothing when they are absent, so an editor can take any section
+    offline from the admin without leaving a gap or a heading with no content.
+    No visitor-facing string is held in this template.
+#}
 {% extends 'base.html.twig' %}
 
-{% set hero = blocks['home.hero']|default(null) %}
-{% set approach = blocks['home.approach']|default(null) %}
-{% set credentials = blocks['home.credentials']|default(null) %}
-{% set contact = blocks['home.contact']|default(null) %}
+{% block title %}{{ blocks['home.hero'].heading|default('Global Dynamics Consulting') }}{% endblock %}
 
-{% block title %}{{ hero and hero.heading ? hero.heading : 'Global Dynamics Consulting' }}{% endblock %}
-
-{% block description %}{{ hero ? hero.body|striptags|slice(0, 155) : 'Project management certification, tool mastery and enterprise strategy consulting in Dar es Salaam.' }}{% endblock %}
+{% block description %}{{ blocks['home.hero'].body|default('Project management certification, tool mastery and enterprise strategy consulting in Dar es Salaam.')|striptags|slice(0, 155) }}{% endblock %}
 
 {% block body %}
-    {# ---- Hero ---- #}
-    <section class="ui-hero-wash">
-        <div class="ui-container ui-section grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
-            <div class="md:col-span-3">
-                {% if hero and hero.eyebrow %}
-                    <p class="ui-type-label">{{ hero.eyebrow }}</p>
-                {% endif %}
-
-                <h1 class="ui-type-display mt-6">
-                    {{ hero and hero.heading ? hero.heading : 'Certification. Tool mastery. Enterprise strategy.' }}
-                </h1>
-
-                {% if hero and hero.body %}
-                    <p class="ui-type-body mt-8 max-w-measure text-lg">{{ hero.body }}</p>
-                {% endif %}
-
-                <div class="mt-10 flex flex-wrap items-center gap-3">
-                    <button type="button" data-funnel-open class="ui-button ui-button-primary">
-                        {{ hero and hero.ctaLabel ? hero.ctaLabel : 'Request a briefing' }}
-                    </button>
-                    <a href="#solutions" class="ui-button ui-button-outline">
-                        Browse the catalogue
-                    </a>
-                </div>
-            </div>
-
-            {# Practice summary. Counts are computed from published data, so they
-               cannot drift out of date the way a hard-coded figure would. #}
-            <aside class="md:col-span-2" aria-label="Practice summary">
-                <dl class="divide-y divide-brand-ink/10 border-y border-brand-ink/10">
-                    <div class="flex items-baseline justify-between py-5">
-                        <dt class="ui-type-label text-muted">Published programmes</dt>
-                        <dd class="font-heading text-sm font-bold text-brand-ink">{{ totalServices }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between py-5">
-                        <dt class="ui-type-label text-muted">Commercial pillars</dt>
-                        <dd class="font-heading text-sm font-bold text-brand-ink">{{ grouped|length }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between py-5">
-                        <dt class="ui-type-label text-muted">Response time</dt>
-                        <dd class="font-heading text-sm font-bold text-brand-ink">1 business day</dd>
-                    </div>
-                </dl>
-            </aside>
-        </div>
-    </section>
-
-    {# ---- Pillars and their offers ---- #}
-    <section class="ui-section" id="solutions">
-        <div class="ui-container">
-            {% include '_partials/_section_heading.html.twig' with {blocks: blocks, key: 'home.pillars'} only %}
-
-            {% if grouped is empty %}
-                <p class="ui-type-body mt-10 max-w-measure">
-                    The catalogue is being finalised. Request a briefing and we will send the
-                    current programme list directly.
-                </p>
-            {% else %}
-                {% for pillar in pillars %}
-                    {% set offers = grouped[pillar.value]|default([]) %}
-
-                    {% if offers is not empty %}
-                        <div class="mt-16 border-t border-brand-ink/10 pt-12">
-                            <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-                                <h3 class="ui-type-headline">{{ pillar.label }}</h3>
-                                <p class="text-sm text-muted">{{ offers|length }} {{ offers|length == 1 ? 'programme' : 'programmes' }}</p>
-                            </div>
-                            <p class="ui-type-body mt-4 max-w-measure">{{ pillar.blurb }}</p>
-
-                            <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-                                {% for service in offers %}
-                                    {% include '_partials/_service_card.html.twig' with {
-                                        service: service,
-                                        span: service.featured ? 'md:col-span-2' : ''
-                                    } only %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
-    </section>
-
-    {# ---- Approach ---- #}
-    {% if approach %}
-        <section class="ui-section bg-mist" id="approach">
-            <div class="ui-container grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
-                <div class="md:col-span-2">
-                    {% if approach.eyebrow %}<p class="ui-type-label">{{ approach.eyebrow }}</p>{% endif %}
-                    <h2 class="ui-type-headline mt-4">{{ approach.heading }}</h2>
-                </div>
-                <div class="md:col-span-3">
-                    <p class="ui-type-body whitespace-pre-line">{{ approach.body }}</p>
-                </div>
-            </div>
-        </section>
-    {% endif %}
-
-    {# ---- Credentials ---- #}
-    {% if credentials %}
-        <section class="ui-section" id="credentials">
-            <div class="ui-container">
-                <div class="rounded-panel border border-brand/20 bg-brand/5 p-10 md:p-14">
-                    {% if credentials.eyebrow %}<p class="ui-type-label">{{ credentials.eyebrow }}</p>{% endif %}
-                    <h2 class="ui-type-headline mt-4 max-w-3xl">{{ credentials.heading }}</h2>
-                    <p class="ui-type-body mt-5 max-w-measure">{{ credentials.body }}</p>
-                </div>
-            </div>
-        </section>
-    {% endif %}
-
-    {# ---- Contact ---- #}
-    <section class="ui-section border-t border-brand-ink/10" id="contact">
-        <div class="ui-container grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
-            <div class="md:col-span-3">
-                {% if contact %}
-                    {% if contact.eyebrow %}<p class="ui-type-label">{{ contact.eyebrow }}</p>{% endif %}
-                    <h2 class="ui-type-headline mt-4">{{ contact.heading }}</h2>
-                    <p class="ui-type-body mt-5 max-w-measure">{{ contact.body }}</p>
-                {% endif %}
-
-                <div class="mt-10">
-                    <button type="button" data-funnel-open class="ui-button ui-button-primary">
-                        {{ contact and contact.ctaLabel ? contact.ctaLabel : 'Request a briefing' }}
-                    </button>
-                </div>
-            </div>
-
-            <aside class="md:col-span-2">
-                <dl class="divide-y divide-brand-ink/10 border-y border-brand-ink/10">
-                    <div class="py-5">
-                        <dt class="ui-type-label text-muted">Office</dt>
-                        <dd class="mt-2 text-sm text-brand-ink">
-                            Mikocheni B, Light Industrial Street<br>House #8, Dar es Salaam
-                        </dd>
-                    </div>
-                    <div class="py-5">
-                        <dt class="ui-type-label text-muted">Telephone</dt>
-                        <dd class="mt-2 text-sm">
-                            <a href="tel:+255753000360" class="font-semibold text-brand transition-colors hover:text-brand-deep">+255 753 000 360</a>
-                        </dd>
-                    </div>
-                    <div class="py-5">
-                        <dt class="ui-type-label text-muted">Email</dt>
-                        <dd class="mt-2 text-sm">
-                            <a href="mailto:info@gdc.co.tz" class="font-semibold text-brand transition-colors hover:text-brand-deep">info@gdc.co.tz</a>
-                        </dd>
-                    </div>
-                </dl>
-            </aside>
-        </div>
-    </section>
+    {% include '_partials/_home_hero.html.twig' with {blocks: blocks, items: items} only %}
+    {% include '_partials/_home_work.html.twig' with {blocks: blocks, items: items} only %}
+    {% include '_partials/_home_services.html.twig' with {blocks: blocks, items: items} only %}
+    {% include '_partials/_home_catalogue.html.twig' with {blocks: blocks, pillars: pillars, grouped: grouped, totalServices: totalServices} only %}
+    {% include '_partials/_home_method.html.twig' with {blocks: blocks, items: items} only %}
+    {% include '_partials/_home_faq.html.twig' with {blocks: blocks, items: items} only %}
+    {% include '_partials/_home_reviews.html.twig' with {blocks: blocks, items: items} only %}
+    {% include '_partials/_home_cta.html.twig' with {blocks: blocks, items: items} only %}
 {% endblock %}

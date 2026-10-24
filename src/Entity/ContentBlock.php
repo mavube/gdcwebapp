@@ -43,6 +43,18 @@ class ContentBlock
     #[Assert\Length(max: 255)]
     private ?string $heading = null;
 
+    /**
+     * The second half of a two-tone heading, rendered in the accent colour.
+     *
+     * Nova's hero sets a trailing phrase apart in colour ("New possibilities
+     * for *ambitious brands*"). Splitting it into its own column rather than
+     * embedding markup keeps the copy plain text, so it stays safe to render
+     * unescaped and an editor cannot inject tags through it.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $headingAccent = null;
+
     /** The eyebrow above the heading, where the design uses one. */
     #[ORM\Column(length: 120, nullable: true)]
     #[Assert\Length(max: 120)]
@@ -63,6 +75,31 @@ class ContentBlock
     #[ORM\Column(length: 120, nullable: true)]
     #[Assert\Length(max: 120)]
     private ?string $ctaTarget = null;
+
+    /** Label for a second, lower-commitment action beside the primary one. */
+    #[ORM\Column(length: 60, nullable: true)]
+    #[Assert\Length(max: 60)]
+    private ?string $secondaryCtaLabel = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
+    private ?string $secondaryCtaTarget = null;
+
+    /**
+     * An image for the section, as a path under public/ or an absolute URL.
+     *
+     * A path rather than an upload: the project commits no image whose rights
+     * are undocumented, so an editor points at a file that is already licensed.
+     * The template falls back to its own branded panel when this is empty or
+     * names a file that is not there.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $image = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $imageAlt = null;
 
     #[ORM\Column]
     private bool $active = true;
@@ -95,6 +132,15 @@ class ContentBlock
     public function getHeading(): ?string { return $this->heading; }
     public function setHeading(?string $heading): self { $this->heading = $heading; return $this; }
 
+    public function getHeadingAccent(): ?string { return $this->headingAccent; }
+
+    public function setHeadingAccent(?string $accent): self
+    {
+        $this->headingAccent = $accent;
+
+        return $this;
+    }
+
     public function getEyebrow(): ?string { return $this->eyebrow; }
     public function setEyebrow(?string $eyebrow): self { $this->eyebrow = $eyebrow; return $this; }
 
@@ -106,6 +152,30 @@ class ContentBlock
 
     public function getCtaTarget(): ?string { return $this->ctaTarget; }
     public function setCtaTarget(?string $target): self { $this->ctaTarget = $target; return $this; }
+
+    public function getSecondaryCtaLabel(): ?string { return $this->secondaryCtaLabel; }
+
+    public function setSecondaryCtaLabel(?string $label): self
+    {
+        $this->secondaryCtaLabel = $label;
+
+        return $this;
+    }
+
+    public function getSecondaryCtaTarget(): ?string { return $this->secondaryCtaTarget; }
+
+    public function setSecondaryCtaTarget(?string $target): self
+    {
+        $this->secondaryCtaTarget = $target;
+
+        return $this;
+    }
+
+    public function getImage(): ?string { return $this->image; }
+    public function setImage(?string $image): self { $this->image = $image; return $this; }
+
+    public function getImageAlt(): ?string { return $this->imageAlt; }
+    public function setImageAlt(?string $alt): self { $this->imageAlt = $alt; return $this; }
 
     public function isActive(): bool { return $this->active; }
     public function setActive(bool $active): self { $this->active = $active; return $this; }

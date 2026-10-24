@@ -1,14 +1,18 @@
-{# ---- 4. Inquiry module: the conversion surface ---- #}
+{# ---- Inquiry module: the conversion surface ---- #}
+{# The panel's copy is editable, like every other visitor-facing string. The
+   form itself follows. #}
+{% set panel = blocks['training.inquiry']|default(null) %}
+
 <section class="ui-section border-t border-brand-ink/10" id="inquiry">
     <div class="grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
         <div class="md:col-span-2">
-            <p class="ui-type-label">Next step</p>
-            <h2 class="ui-type-headline mt-4">
-                Request a quotation or book a meeting
-            </h2>
-            <p class="ui-type-body mt-5 max-w-measure">
-                Tell us what your team needs. A consultant will respond within one business day.
-            </p>
+            {% if panel and panel.eyebrow %}<p class="ui-type-label">{{ panel.eyebrow }}</p>{% endif %}
+            {% if panel and panel.heading %}
+                <h2 class="ui-type-headline mt-4">{{ panel.heading }}</h2>
+            {% endif %}
+            {% if panel and panel.body %}
+                <p class="ui-type-body mt-5 max-w-measure">{{ panel.body }}</p>
+            {% endif %}
         </div>
 
         <div class="md:col-span-3">

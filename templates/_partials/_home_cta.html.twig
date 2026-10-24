@@ -1,0 +1,84 @@
+{#
+    Closing call to action.
+
+    The reference ends the page with a dark band carrying a large headline, a
+    line of reassurance and two actions, then the legal and navigation rows.
+
+    Contact details are read from the block, so the address, phone and email are
+    edited in the admin rather than hard-coded here. The two actions follow the
+    same intent hierarchy as the hero: the primary opens the conversion deck,
+    the secondary offers the lower-commitment route.
+#}
+{% set cta = blocks['home.contact']|default(null) %}
+
+{% if cta %}
+    <section class="relative overflow-hidden bg-brand-ink text-surface" id="contact">
+        {# Brand wash rather than a photograph: the project has no licensed
+           background image, and a gradient in the brand colours keeps the band
+           on-brand without one. #}
+        <div class="absolute inset-0" aria-hidden="true"
+             style="background-image:
+                    radial-gradient(50rem 30rem at 80% 0%, rgb(1 129 201 / 0.35), transparent 65%),
+                    radial-gradient(36rem 24rem at 10% 100%, rgb(236 118 0 / 0.22), transparent 60%);"></div>
+
+        <div class="ui-container relative z-10 py-20">
+            <div class="mx-auto max-w-3xl text-center">
+                {% if cta.eyebrow %}
+                    <p class="mb-5 flex items-center justify-center gap-4 text-label font-semibold uppercase tracking-widest text-accent">
+                        <span class="h-px w-10 bg-accent/70" aria-hidden="true"></span>
+                        {{ cta.eyebrow }}
+                        <span class="h-px w-10 bg-accent/70" aria-hidden="true"></span>
+                    </p>
+                {% endif %}
+
+                {% if cta.heading %}
+                    <h2 class="font-heading text-display font-bold text-surface">{{ cta.heading }}</h2>
+                {% endif %}
+
+                {% if cta.body %}
+                    <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-surface/80">{{ cta.body }}</p>
+                {% endif %}
+
+                <div class="mx-auto mt-10 flex w-full max-w-xs flex-col justify-center gap-3 sm:max-w-none sm:flex-row">
+                    {% if cta.ctaLabel %}
+                        {% set ctaHref = cta.ctaTarget == 'funnel' ? null : gdc_link(cta.ctaTarget) %}
+                        {% if ctaHref %}
+                            <a href="{{ ctaHref }}" class="ui-button ui-button-accent"
+                               {% if gdc_is_external(cta.ctaTarget) %}target="_blank" rel="noreferrer"{% endif %}>{{ cta.ctaLabel }}</a>
+                        {% else %}
+                            <button type="button" data-funnel-open class="ui-button ui-button-accent">{{ cta.ctaLabel }}</button>
+                        {% endif %}
+                    {% endif %}
+                    {% set secondaryHref = gdc_link(cta.secondaryCtaTarget) %}
+                    {% if cta.secondaryCtaLabel and secondaryHref %}
+                        <a href="{{ secondaryHref }}"
+                           class="ui-button border border-surface/65 bg-brand-ink/35 text-surface hover:bg-brand-ink/55">
+                            {{ cta.secondaryCtaLabel }}
+                        </a>
+                    {% endif %}
+                </div>
+
+                {# Contact facts, from the "site.contact" rows so the address,
+                   phone and email are admin-editable rather than hard-coded. #}
+                {% set contact = items['site.contact']|default([]) %}
+                {% if contact|length > 0 %}
+                    <dl class="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-6 text-sm sm:grid-cols-3">
+                        {% for channel in contact %}
+                            {% set channelHref = gdc_link(channel.linkTarget) %}
+                            <div>
+                                <dt class="text-label font-semibold uppercase tracking-widest text-surface/60">{{ channel.title }}</dt>
+                                <dd class="mt-2 text-surface/85">
+                                    {% if channelHref %}
+                                        <a href="{{ channelHref }}" class="transition-colors hover:text-accent">{{ channel.subtitle }}</a>
+                                    {% else %}
+                                        {{ channel.subtitle }}
+                                    {% endif %}
+                                </dd>
+                            </div>
+                        {% endfor %}
+                    </dl>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endif %}

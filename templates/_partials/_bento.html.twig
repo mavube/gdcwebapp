@@ -1,47 +1,42 @@
-{# ---- 3. Solutions Bento Matrix: 3-col grid, asymmetric 2+1 spans ---- #}
-<section class="ui-section" id="solutions">
-    <h2 class="ui-type-headline">Corporate solutions</h2>
-    <p class="ui-type-body mt-4 max-w-measure">A structured portfolio spanning certification, automation and mentorship.</p>
+{#
+    Programme page: the solution cards.
 
-    <div class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {# Card A: double-width - Training Pillar #}
-        {% include '_partials/_bento_card.html.twig' with {
-            span: 'md:col-span-2',
-            eyebrow: 'Certification',
-            title: 'The Training Pillar',
-            body: 'PMP and associated corporate development paths, delivered by practising programme leaders.',
-            cta: 'Explore training',
-            href: '#programmes'
-        } only %}
+    These previously held copy and claims in the template: named client projects,
+    product marks and links to anchors that do not exist on the page. That broke
+    the project's rule that no visitor-facing string is hard-coded, and it stated
+    facts about GDC that nothing here can substantiate.
 
-        {# Card B: single-width - Operational Tech #}
-        {% include '_partials/_bento_card.html.twig' with {
-            span: '',
-            eyebrow: 'Automation',
-            title: 'Operational Tech',
-            body: 'ValueBlueprint® automations and strategic systems integration for delivery teams.',
-            cta: 'See integrations',
-            href: '#automation'
-        } only %}
+    The section now renders from the "training.solutions" rows. The heading comes
+    from a block, and each card is a row, so the copy is edited in the admin and
+    the section disappears when it has no rows.
 
-        {# Card C: single-width - Ecosystem Support #}
-        {% include '_partials/_bento_card.html.twig' with {
-            span: '',
-            eyebrow: 'Mentorship',
-            title: 'Ecosystem Support',
-            body: 'The PMPCitizen™ mentorship network, connecting practitioners across cohorts.',
-            cta: 'Join the network',
-            href: '#mentorship'
-        } only %}
+    A row that names a destination gets a link; a row without one is a plain
+    card, so an editor can publish a card before the page it points at exists.
+#}
+{% set section = blocks['training.solutions']|default(null) %}
+{% set cards = items['training.solutions']|default([]) %}
 
-        {# Card D: double-width - Validation Records #}
-        {% include '_partials/_bento_card.html.twig' with {
-            span: 'md:col-span-2',
-            eyebrow: 'Case records',
-            title: 'Validation Records',
-            body: 'Active engagement telemetry from the EIST Technology and TASFAM project records.',
-            cta: 'Review records',
-            href: '#records'
-        } only %}
-    </div>
-</section>
+{% if cards|length > 0 %}
+    <section class="ui-section" id="solutions">
+        {% if section and section.heading %}
+            <h2 class="ui-type-headline">{{ section.heading }}</h2>
+        {% endif %}
+        {% if section and section.body %}
+            <p class="ui-type-body mt-4 max-w-measure">{{ section.body }}</p>
+        {% endif %}
+
+        <div class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+            {% for card in cards %}
+                {% set href = gdc_link(card.linkTarget) %}
+                {% include '_partials/_bento_card.html.twig' with {
+                    span: loop.first ? 'md:col-span-2' : '',
+                    eyebrow: card.subtitle,
+                    title: card.title,
+                    body: card.body,
+                    cta: href ? card.linkLabel,
+                    href: href,
+                } only %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}

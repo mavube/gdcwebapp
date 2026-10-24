@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use App\Entity\ContentBlock;
+use App\Entity\ContentItem;
 use App\Entity\CourseInquiry;
 use App\Entity\TrainingProgram;
+use App\Enum\ContentSection;
 use App\Repository\TrainingProgramRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,29 +48,118 @@ final class TrainingFlowTest extends WebTestCase
         $em->flush();
     }
 
+    /**
+     * The home hero's copy is editable content, so the test supplies its own
+     * rather than depending on what the fixtures happen to hold. Asserting on
+     * the fixture's wording would make this test fail for the right reason
+     * whenever an editor reworded the hero.
+     */
     public function testHomePageRenders(): void
     {
         $client = $this->client();
         $this->seedProgram();
+        $this->seedHeroHeading('Certification. Tool mastery. Enterprise strategy.');
 
         $client->request('GET', '/');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Certification');
     }
 
+    private function seedHeroHeading(string $heading): void
+    {
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $block = $em->getRepository(ContentBlock::class)->findOneBy(['blockKey' => 'home.hero']);
+
+        if ($block === null) {
+            $block = new ContentBlock();
+            $block->setBlockKey('home.hero');
+            $block->setLabel('Home · Hero');
+            $em->persist($block);
+        }
+
+        $block->setActive(true);
+        $block->setHeading($heading);
+        $em->flush();
+    }
+
+    /**
+     * The hero's framing line and headline suffix are editable content, so the
+     * test seeds them rather than relying on the fixtures. The programme's own
+     * title still comes from its record.
+     */
+    private function seedTrainingHero(): void
+    {
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $block = $em->getRepository(ContentBlock::class)->findOneBy(['blockKey' => 'training.hero']);
+
+        if ($block === null) {
+            $block = new ContentBlock();
+            $block->setBlockKey('training.hero');
+            $block->setLabel('Programme · Hero');
+            $em->persist($block);
+        }
+
+        $block->setActive(true);
+        $block->setHeadingAccent('Certification & Strategy');
+        $em->flush();
+    }
+
     public function testTrainingPageRendersHeroAndBento(): void
     {
         $client = $this->client();
         $this->seedProgram();
+        $this->seedSolutionCards(4);
+        $this->seedTrainingHero();
 
         $client->request('GET', '/training/pmp-certification');
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('h1');
         self::assertSelectorTextContains('h1', 'PMP Certification');
-        // Bento matrix must be present with all four cards.
+        // The card grid renders one card per seeded row.
         self::assertSelectorCount(4, '#solutions article');
         // Inquiry form present.
         self::assertSelectorExists('form[name="course_inquiry"]');
+    }
+
+    /**
+     * The solution cards are editable rows, so the test seeds its own rather
+     * than depending on what the fixtures hold. The section renders nothing
+     * when it has no rows, which is asserted separately below.
+     */
+    private function seedSolutionCards(int $count): void
+    {
+        $em = self::getContainer()->get('doctrine')->getManager();
+
+        $em->createQuery('DELETE FROM ' . ContentItem::class . ' i WHERE i.section = :section')
+            ->setParameter('section', ContentSection::TrainingSolutions)
+            ->execute();
+
+        for ($i = 1; $i <= $count; $i++) {
+            $item = new ContentItem();
+            $item->setSection(ContentSection::TrainingSolutions);
+            $item->setSortOrder($i * 10);
+            $item->setTitle('Seeded solution card ' . $i);
+            $item->setBody('Seeded solution body ' . $i . '.');
+            $em->persist($item);
+        }
+
+        $em->flush();
+    }
+
+    /**
+     * The section is content-driven: with no rows there is no heading and no
+     * card, rather than an empty grid under a title.
+     */
+    public function testTrainingSolutionsSectionIsAbsentWithoutRows(): void
+    {
+        $client = $this->client();
+        $this->seedProgram();
+        $this->seedSolutionCards(0);
+
+        $client->request('GET', '/training/pmp-certification');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('#solutions');
     }
 
     public function testUnknownSlugReturns404(): void

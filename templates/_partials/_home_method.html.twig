@@ -1,0 +1,83 @@
+{#
+    The method panel.
+
+    Occupies the slot the reference template gives its team section, but states
+    something GDC can substantiate: what the practice actually does and the
+    credentials behind it. The project has no team portraits or biographies, and
+    inventing named people or client logos would be a fabrication, so the panel
+    carries a statement of method instead.
+
+    The avatar stack and the tick list are still driven by ContentItem
+    ("home.team.avatars" and "home.team.checks"), so when real portraits and
+    credentials exist they are added through the admin with no template change.
+    Until then the stack simply does not render.
+#}
+{% set panel = blocks['home.method']|default(null) %}
+{% set checks = items['home.team.checks']|default([]) %}
+{% set avatars = items['home.team.avatars']|default([]) %}
+
+{% if panel %}
+    <section class="ui-section bg-mist" id="method">
+        <div class="ui-container grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+
+            <div class="ui-media-tile min-h-[20rem] lg:min-h-[28rem]">
+                {% set panelImage = gdc_image(panel.image|default(null)) %}
+                {% if panelImage %}
+                    <img src="{{ panelImage }}" alt="{{ panel.imageAlt|default('') }}" loading="lazy">
+                {% else %}
+                    <div class="ui-media-placeholder">
+                        <p class="ui-type-label">{{ panel.eyebrow }}</p>
+                        <p class="font-heading text-xl font-bold text-brand-ink">{{ panel.heading }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col gap-5">
+                {% if panel.eyebrow %}
+                    <p class="ui-type-label">{{ panel.eyebrow }}</p>
+                {% endif %}
+                {% if panel.heading %}
+                    <h2 class="ui-section-title">{{ panel.heading }}</h2>
+                {% endif %}
+                {% if panel.body %}
+                    <p class="ui-type-lead">{{ panel.body }}</p>
+                {% endif %}
+
+                {# Credential line: the figure and its caption, from the block.
+                   Only rendered when the editor has supplied both halves, so a
+                   bare number never appears without saying what it counts. #}
+                {% if panel.ctaLabel and panel.ctaTarget %}
+                    <div class="flex flex-wrap items-center gap-4">
+                        {% if avatars|length > 0 %}
+                            <div class="ui-avatar-stack" aria-label="{{ panel.heading }}">
+                                {% for avatar in avatars %}
+                                    {% set avatarImage = gdc_image(avatar.image) %}
+                                    {% if avatarImage %}
+                                        <img src="{{ avatarImage }}" alt="{{ avatar.imageAlt|default('') }}" loading="lazy" width="48" height="48">
+                                    {% else %}
+                                        <span class="ui-avatar">{{ avatar.title|slice(0, 2)|upper }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="flex items-baseline gap-2">
+                            <strong class="font-heading text-2xl font-bold text-brand-ink">{{ panel.ctaLabel }}</strong>
+                            <span class="text-sm text-muted">{{ panel.ctaTarget }}</span>
+                        </p>
+                    </div>
+                {% endif %}
+
+                {% if checks|length > 0 %}
+                    <ul class="mt-2 grid list-none gap-3 p-0">
+                        {% for check in checks %}
+                            <li class="flex items-center gap-3">
+                                <span class="ui-tick" aria-hidden="true">&rarr;</span>
+                                <span class="ui-type-body text-brand-ink">{{ check.body }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endif %}

@@ -1,0 +1,88 @@
+{#
+    Client reviews.
+
+    Three columns of cards scrolling upward at different speeds, following the
+    reference. Each column repeats its own cards three times and translates by
+    exactly one third of its height, so the loop is seamless — at -33.333% the
+    second copy sits where the first started.
+
+    Only the first copy of each column is exposed to assistive technology and to
+    find-in-page; the repeats are aria-hidden, because they are the same quotes
+    again and a screen reader should not read them three times.
+
+    The columns are split by rotating the list rather than by chunking it, so
+    each column holds every quote and the wall stays balanced whether there are
+    three reviews or thirty.
+
+    The section renders only when reviews exist. The project has no client
+    testimonials on record and inventing endorsements is not acceptable, so the
+    UI ships dormant and the rows are added through the admin when they are real.
+#}
+{% set heading = blocks['home.reviews']|default(null) %}
+{% set reviews = items['home.reviews']|default([]) %}
+
+{% if reviews|length > 0 %}
+    {% set count = reviews|length %}
+    {% set columns = [
+        reviews,
+        count > 2 ? reviews[2:]|merge(reviews[:2]) : reviews,
+        count > 1 ? reviews[1:]|merge(reviews[:1]) : reviews,
+    ] %}
+    {% set speeds = ['ui-review-track-slow', 'ui-review-track-mid', 'ui-review-track-fast'] %}
+
+    <section class="ui-section overflow-hidden" id="reviews">
+        <div class="ui-container">
+            <div class="ui-section-head ui-section-head-centered">
+                {% if heading and heading.eyebrow %}
+                    <p class="ui-type-label">{{ heading.eyebrow }}</p>
+                {% endif %}
+                {% if heading and heading.heading %}
+                    <h2 class="ui-section-title">{{ heading.heading }}</h2>
+                {% endif %}
+                {% if heading and heading.body %}
+                    <p class="ui-type-lead">{{ heading.body }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# The mask fades the top and bottom so cards appear to drift in rather
+           than being cut off. #}
+        <div class="relative mx-auto mt-12 flex max-h-[45rem] max-w-6xl justify-center gap-4 overflow-hidden
+                    [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)] md:gap-6">
+            {% for column in columns %}
+                <div class="w-full max-w-sm{% if not loop.first %} hidden md:block{% endif %}">
+                    <div class="ui-review-track {{ speeds[loop.index0] }} flex flex-col">
+                        {% for copy in 1..3 %}
+                            <div class="flex flex-col gap-5 pb-5"{% if copy > 1 %} aria-hidden="true"{% endif %}>
+                                {% for review in column %}
+                                    <article class="ui-quote-card">
+                                        {% if review.body %}
+                                            <p class="leading-relaxed text-muted">{{ review.body }}</p>
+                                        {% endif %}
+                                        <footer class="ui-quote-attribution">
+                                            {% set portrait = gdc_image(review.image) %}
+                                            <span class="ui-avatar">
+                                                {{ review.title|slice(0, 2)|upper }}
+                                                {% if portrait %}
+                                                    <img src="{{ portrait }}" alt="" loading="lazy" width="40" height="40">
+                                                {% endif %}
+                                            </span>
+                                            <span>
+                                                {% if review.title %}
+                                                    <cite class="block font-heading text-sm font-semibold not-italic text-brand-ink">{{ review.title }}</cite>
+                                                {% endif %}
+                                                {% if review.subtitle %}
+                                                    <span class="text-sm text-muted">{{ review.subtitle }}</span>
+                                                {% endif %}
+                                            </span>
+                                        </footer>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}

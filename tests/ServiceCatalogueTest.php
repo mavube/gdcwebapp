@@ -143,6 +143,37 @@ final class ServiceCatalogueTest extends WebTestCase
         $em->flush();
     }
 
+    /**
+     * The labels around the record's own fields are editable blocks. With those
+     * blocks absent the page still renders: the record carries the substance,
+     * so a missing label must not blank the page.
+     */
+    public function testServiceDetailRendersWithoutItsEditableLabels(): void
+    {
+        $client = $this->client();
+        $this->seedService('label-free-offer');
+        $this->clearBlocks('service.overview', 'service.siblings', 'service.closing');
+
+        $crawler = $client->request('GET', '/services/label-free-offer');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Label Free Offer', $crawler->filter('h1')->text());
+    }
+
+    private function clearBlocks(string ...$keys): void
+    {
+        $em = self::getContainer()->get('doctrine')->getManager();
+
+        foreach ($keys as $key) {
+            $block = $em->getRepository(ContentBlock::class)->findOneBy(['blockKey' => $key]);
+            if ($block !== null) {
+                $block->setActive(false);
+            }
+        }
+
+        $em->flush();
+    }
+
     public function testUnknownServiceSlugReturns404(): void
     {
         $client = $this->client();
@@ -364,14 +395,14 @@ final class ServiceCatalogueTest extends WebTestCase
         $client = $this->client();
         $em = self::getContainer()->get('doctrine')->getManager();
 
-        $block = $this->blocks()->findOneBy(['blockKey' => 'home.approach']);
+        $block = $this->blocks()->findOneBy(['blockKey' => 'home.method']);
         if ($block === null) {
             $block = new ContentBlock();
-            $block->setBlockKey('home.approach');
-            $block->setLabel('Home · Approach');
+            $block->setBlockKey('home.method');
+            $block->setLabel('Home · Method panel');
             $block->setEyebrow('Our approach');
-            $block->setHeading('Aligning People, Processes and Purpose');
-            $block->setBody('A test body for the approach section.');
+            $block->setHeading('Aligning People, Processes and Purpose for Value');
+            $block->setBody('A test body for the method section.');
             $em->persist($block);
             $em->flush();
         }
@@ -384,13 +415,13 @@ final class ServiceCatalogueTest extends WebTestCase
             $em->flush();
 
             $client->request('GET', '/');
-            self::assertSelectorExists('#approach');
+            self::assertSelectorExists('#method');
 
             $block->setActive(false);
             $em->flush();
 
             $client->request('GET', '/');
-            self::assertSelectorNotExists('#approach');
+            self::assertSelectorNotExists('#method');
         } finally {
             // Reactivate even if an assertion above failed, so this test cannot
             // poison the next one.

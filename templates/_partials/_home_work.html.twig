@@ -1,0 +1,93 @@
+{#
+    Selected engagements.
+
+    A horizontal scroller of media tiles, following the reference's portfolio
+    carousel: a left-aligned header with the controls beside it, then the tiles
+    bleeding to the viewport edge.
+
+    The controls are progressive enhancement — the scroller is natively
+    scrollable and keyboard operable without them — so the script only wires the
+    buttons up. Each tile that has an image links to its engagement; a tile
+    without one renders the branded placeholder instead of a broken image.
+#}
+{% set heading = blocks['home.work']|default(null) %}
+{% set work = items['home.work']|default([]) %}
+
+{% if heading or work|length > 0 %}
+    <section class="ui-section" id="work">
+        <div class="ui-container">
+            <div class="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+                <div class="ui-section-head max-w-2xl">
+                    {% if heading and heading.eyebrow %}
+                        <p class="ui-type-label">{{ heading.eyebrow }}</p>
+                    {% endif %}
+                    {% if heading and heading.heading %}
+                        <h2 class="ui-section-title">{{ heading.heading }}</h2>
+                    {% endif %}
+                    {% if heading and heading.body %}
+                        <p class="ui-type-lead">{{ heading.body }}</p>
+                    {% endif %}
+                </div>
+
+                {% if work|length > 1 %}
+                    <div class="flex shrink-0 items-center gap-3">
+                        <button type="button" data-scroller-prev class="ui-scroller-button" aria-label="Previous engagement">
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <button type="button" data-scroller-next class="ui-scroller-button" aria-label="Next engagement">
+                            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# The scroller sits outside the container so tiles bleed off the right
+           edge, which is what signals "there is more to scroll". #}
+        <div class="ui-scroller mt-12 pl-[clamp(1rem,4vw,3rem)]" data-scroller tabindex="0"
+             role="region" aria-label="{{ heading and heading.heading ? heading.heading : 'Selected engagements' }}">
+            {% for item in work %}
+                {% set href = gdc_link(item.linkTarget) %}
+                {% set image = gdc_image(item.image) %}
+                {% set tile = 'ui-media-tile ui-scroller-item aspect-[4/5] w-[80vw] sm:w-80 md:w-96 md:aspect-[3/4]' %}
+
+                {% if href %}
+                    <a href="{{ href }}" class="{{ tile }} group block"
+                       {% if gdc_is_external(item.linkTarget) %}target="_blank" rel="noreferrer"{% endif %}>
+                {% else %}
+                    <div class="{{ tile }}">
+                {% endif %}
+
+                    {% if image %}
+                        <img src="{{ image }}" alt="{{ item.imageAlt|default(item.title) }}" loading="lazy">
+                        <div class="ui-media-overlay"></div>
+                        <div class="absolute inset-x-0 bottom-0 p-6">
+                            {% if item.subtitle %}
+                                <span class="ui-type-label">{{ item.subtitle }}</span>
+                            {% endif %}
+                            {% if item.title %}
+                                <h3 class="mt-2 font-heading text-lg font-bold text-surface">{{ item.title }}</h3>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        {# No photograph yet: the tile states what it will hold. #}
+                        <div class="ui-media-placeholder">
+                            {% if item.subtitle %}
+                                <p class="ui-type-label">{{ item.subtitle }}</p>
+                            {% endif %}
+                            {% if item.title %}
+                                <p class="font-heading text-lg font-bold text-brand-ink">{{ item.title }}</p>
+                            {% endif %}
+                            <p class="text-xs text-muted">Image to be supplied</p>
+                        </div>
+                    {% endif %}
+
+                {% if href %}</a>{% else %}</div>{% endif %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}

@@ -1,0 +1,46 @@
+{#
+    Content editor: one named section.
+
+    Field labels and help come from the form type, so the copy explaining what
+    each field does lives next to the field definition rather than here.
+#}
+{% extends 'admin/content/_frame.html.twig' %}
+
+{% block title %}{{ is_new ? 'New section' : 'Edit section' }} · GDC Command Centre{% endblock %}
+
+{% block form %}
+    <h1 class="text-2xl font-bold tracking-tight text-white">{{ is_new ? 'New section' : 'Edit section' }}</h1>
+    <p class="mt-1 text-sm text-slate-400">
+        {% if is_new %}
+            A section is addressed by its key, so the key must match one a template asks for.
+        {% else %}
+            <span class="font-mono text-xs text-slate-500">{{ block.blockKey }}</span>
+        {% endif %}
+    </p>
+
+    {{ form_start(form, {attr: {class: 'mt-8 space-y-6'}}) }}
+        {% for field in form %}
+            {% if field.vars.name != '_token' %}
+                <div class="rounded-lg border border-slate-700/50 bg-slate-800/40 p-5">
+                    {{ form_row(field, {
+                        row_attr: {class: 'block'},
+                        label_attr: {class: 'block text-xs font-semibold uppercase tracking-wider text-slate-400'},
+                        attr: {class: 'mt-2 block w-full rounded-md border border-slate-700 bg-[#0F172A] px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500'},
+                        help_attr: {class: 'mt-1.5 text-xs text-slate-500'},
+                    }) }}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex items-center gap-3">
+            <button type="submit"
+                    class="rounded-md bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-sky-400">
+                {{ is_new ? 'Create section' : 'Save changes' }}
+            </button>
+            <a href="{{ path("app_admin_content_index") }}"
+               class="rounded-md border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:border-slate-500 hover:text-white">
+                Cancel
+            </a>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}
