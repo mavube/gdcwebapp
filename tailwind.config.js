@@ -4,28 +4,51 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Nova palette. The three original token names are kept because the
-        // templates and assets/funnel.js depend on them; their values now carry
-        // the design's warm surface, near-black ink and copper accent.
-        regal: "#b98b6e", // copper accent
-        navy: "#161616", // ink
-        canvas: "#fffdf9", // warm off-white
-        ember: "#a3765b", // copper, pressed/hover
-        cream: "#f4f0e9",
-        sand: "#eee8df",
-        linen: "#ddd4c9",
-        taupe: "#b9aea2",
-        muted: "#68635d",
-        danger: "#b42318",
-        ok: "#2f6b4f",
+        // GDC brand palette, taken from the live site's Elementor global kit:
+        // primary #0181C9, secondary #1A2E38, text/accent #EC7600.
+        //
+        // The legacy names regal/navy/canvas are kept as aliases because
+        // assets/funnel.js and the existing templates reference them. New work
+        // should prefer the semantic names (brand/ink/surface/accent).
+        brand: {
+          DEFAULT: "#0181C9", // GDC blue - primary actions, links
+          deep: "#016BA6", // pressed blue
+          ink: "#1A2E38", // deep teal-navy - headings, dark surfaces
+        },
+        accent: {
+          DEFAULT: "#EC7600", // GDC orange - eyebrows, highlights
+          deep: "#C96300", // pressed orange
+        },
+        surface: "#FFFFFF",
+        mist: "#F4F7FA", // very light blue-grey section wash
+        slate: {
+          50: "#F8FAFC",
+          100: "#EEF2F6",
+          200: "#DCE3EA",
+          400: "#93A2B0",
+          600: "#5A6B7A",
+          800: "#1A2E38", // aliases the brand ink so slate-800/20 keeps working
+        },
+
+        // Legacy aliases. Kept so existing templates and funnel.js keep
+        // resolving; values now carry the GDC palette.
+        regal: "#0181C9", // was the copper accent; now GDC blue
+        navy: "#1A2E38", // was near-black ink; now brand deep teal-navy
+        canvas: "#FFFFFF", // was warm off-white; now white
+        ember: "#016BA6", // pressed blue
+        cream: "#F4F7FA",
+        sand: "#EEF2F6",
+        linen: "#DCE3EA",
+        taupe: "#93A2B0",
+        muted: "#5A6B7A",
+        danger: "#B42318",
+        ok: "#2F6B4F",
       },
       fontFamily: {
-        // Nova self-hosts Satoshi (body) and Outfit (headings). No font binary
-        // is committed, so these resolve only once the owner adds the files
-        // after clearing their licences; until then the stack falls through to
-        // the system faces.
-        sans: ["Satoshi", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
-        heading: ["Outfit", "Satoshi", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        // Self-hosted, SIL OFL licensed, latin + latin-ext subsets in
+        // public/fonts. No CDN request: see @font-face in assets/styles/app.css.
+        sans: ["Manrope", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        heading: ["Plus Jakarta Sans", "Manrope", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
       },
       fontSize: {
         display: ["clamp(2.75rem, 7vw, 4rem)", { lineHeight: "0.96", letterSpacing: "-0.055em" }],

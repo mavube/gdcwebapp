@@ -4,11 +4,24 @@
     Rendered once per page and controlled entirely by assets/funnel.js. Every
     network call returns JSON, so opening, validating and committing a lead
     never triggers a navigation event.
+
+    The deck is hybridised. The shape of the funnel (which fields appear, how
+    many steps, whether a corporate email domain is required) is decided by
+    funnelConfig, which the controller builds from the service's FunnelTrack.
+    Everything below is rendered from that configuration, so adding a service or
+    changing its funnel needs no template edit.
 #}
+
+{% set config = gdc_funnel_config(deckService|default(null)) %}
+{% set track = config ? config.track : 'organisation' %}
+{% set fieldsStep = null %}
+{% for step in config ? config.steps : [] %}
+    {% if step.kind == 'fields' %}{% set fieldsStep = step %}{% endif %}
+{% endfor %}
 
 {# ---- Overlay: dims the site behind the deck and locks scroll while open ---- #}
 <div id="funnel-overlay"
-     class="fixed inset-0 z-40 hidden bg-navy/40 backdrop-blur-sm"
+     class="fixed inset-0 z-40 hidden bg-brand-ink/50 backdrop-blur-sm"
      aria-hidden="true"></div>
 
 {# ---- The panel: settles at 512px from the right edge ---- #}
@@ -20,17 +33,21 @@
        data-csrf-token="{{ csrf_token("funnel") }}"
        data-validate-url="{{ path("app_funnel_validate") }}"
        data-submit-url="{{ path("app_funnel_submit") }}"
+       data-track="{{ track }}"
+       data-service="{{ config and config.service ? config.service.slug : "" }}"
        class="max-w-lg w-full h-full fixed inset-y-0 right-0 z-50 transform translate-x-full
-              flex flex-col bg-canvas shadow-strong transition-transform duration-300 ease-out">
+              flex flex-col bg-surface shadow-strong transition-transform duration-300 ease-out">
 
     {# ---- Deck header ---- #}
-    <div class="flex items-center justify-between border-b border-navy/10 px-7 py-6">
+    <div class="flex items-center justify-between border-b border-brand-ink/10 px-7 py-6">
         <div>
-            <p class="ui-type-label">GDC Briefing Request</p>
-            <p id="funnel-step-label" class="mt-2 text-sm text-muted">Step 1 of 2 · Select your objective</p>
+            <p class="ui-type-label">
+                {% if config and config.service %}{{ config.service.title }}{% else %}GDC Briefing Request{% endif %}
+            </p>
+            <p id="funnel-step-label" class="mt-2 text-sm text-muted">Step 1 of 2 &middot; Select your objective</p>
         </div>
         <button type="button" id="funnel-close" aria-label="Close request panel"
-                class="rounded-full p-2 text-muted transition-colors hover:bg-navy/5 hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-regal">
+                class="rounded-full p-2 text-muted transition-colors hover:bg-brand-ink/5 hover:text-brand-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
             </svg>
@@ -46,31 +63,49 @@
         {# ================= STEP 1: Intent matrix ================= #}
         <section id="funnel-step-1" data-step="1">
             <h2 id="funnel-title" class="ui-type-title">
-                How can GDC support your organization?
+                {{ config ? config.steps[0].heading : "How can GDC support your organization?" }}
             </h2>
             <p class="ui-type-body mt-3 text-sm">
-                Choose the engagement track that matches your immediate priority.
+                {{ config ? config.steps[0].body : "Choose the engagement track that matches your immediate priority." }}
             </p>
 
             <fieldset class="mt-7 space-y-3">
                 <legend class="sr-only">Engagement track</legend>
 
-                {% set tiers = [
-                    {value: "value-blueprint", title: "Enterprise Process Optimization & Strategy Briefing", note: "ValueBlueprint™ Alignment"},
-                    {value: "credentialing", title: "Professional Credentialing Track", note: "PMP / CAPM / MS Project Programs"},
-                    {value: "mentorship", title: "Executive Mentorship Framework Enrollment", note: "PMPCitizen™ Lifecycle Support"}
-                ] %}
+                {% if config and config.entries is not empty %}
+                    {# Per-service funnel: one radio per published offer, grouped by pillar. #}
+                    {% for entry in config.entries %}
+                        <p class="pt-3 text-label font-semibold uppercase tracking-widest text-muted">{{ entry.label }}</p>
+                        {% for offer in entry.services %}
+                            <label class="flex cursor-pointer items-start gap-4 rounded-field border border-brand-ink/15 p-5 transition-colors hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand/5">
+                                <input type="radio" name="intentTier" value="{{ offer.slug }}" data-funnel-field="intentTier"
+                                       class="mt-1 h-4 w-4 shrink-0 border-taupe text-brand focus:ring-brand">
+                                <span class="min-w-0">
+                                    <span class="block font-heading text-sm font-semibold text-brand-ink">{{ offer.title }}</span>
+                                    <span class="mt-2 block text-xs tracking-wide text-muted">{{ offer.tagline }}</span>
+                                </span>
+                            </label>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    {# Legacy three-tier deck. #}
+                    {% set tiers = [
+                        {value: "value-blueprint", title: "Enterprise Process Optimization & Strategy Briefing", note: "ValueBlueprint™ Alignment"},
+                        {value: "credentialing", title: "Professional Credentialing Track", note: "PMP / CAPM / MS Project Programs"},
+                        {value: "mentorship", title: "Executive Mentorship Framework Enrollment", note: "PMPCitizen™ Lifecycle Support"}
+                    ] %}
 
-                {% for tier in tiers %}
-                    <label class="flex cursor-pointer items-start gap-4 rounded-field border border-navy/15 p-5 transition-colors hover:border-regal has-[:checked]:border-regal has-[:checked]:bg-regal/5">
-                        <input type="radio" name="intentTier" value="{{ tier.value }}" data-funnel-field="intentTier"
-                               class="mt-1 h-4 w-4 shrink-0 border-taupe text-regal focus:ring-regal">
-                        <span class="min-w-0">
-                            <span class="block font-heading text-sm font-semibold text-navy">{{ tier.title }}</span>
-                            <span class="mt-2 block text-xs tracking-wide text-muted">{{ tier.note }}</span>
-                        </span>
-                    </label>
-                {% endfor %}
+                    {% for tier in tiers %}
+                        <label class="flex cursor-pointer items-start gap-4 rounded-field border border-brand-ink/15 p-5 transition-colors hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand/5">
+                            <input type="radio" name="intentTier" value="{{ tier.value }}" data-funnel-field="intentTier"
+                                   class="mt-1 h-4 w-4 shrink-0 border-taupe text-brand focus:ring-brand">
+                            <span class="min-w-0">
+                                <span class="block font-heading text-sm font-semibold text-brand-ink">{{ tier.title }}</span>
+                                <span class="mt-2 block text-xs tracking-wide text-muted">{{ tier.note }}</span>
+                            </span>
+                        </label>
+                    {% endfor %}
+                {% endif %}
             </fieldset>
 
             <button type="button" id="funnel-to-step-2" disabled
@@ -79,43 +114,100 @@
             </button>
         </section>
 
-        {# ================= STEP 2: Demographic payload ================= #}
+        {# ================= STEP 2: Demographic payload =================
+           Both track variants are rendered server-side and the controller's
+           script reveals the one matching the selected offer. Keeping both in
+           the HTML (rather than building fields in JavaScript) means the form
+           still works if the script fails, and no markup lives in JS. #}
         <section id="funnel-step-2" data-step="2" class="hidden">
-            <h2 class="ui-type-title">
+            <h2 id="funnel-step-2-heading" class="ui-type-title">
                 Where should we send your briefing confirmation?
             </h2>
-            <p class="ui-type-body mt-3 text-sm">
-                All fields are required. We reply to corporate addresses only.
+            <p id="funnel-step-2-body" class="ui-type-body mt-3 text-sm">
+                All fields are required.
             </p>
 
             <div class="mt-7 space-y-5">
-                {% set fields = [
-                    {name: "fullName", label: "Full name", type: "text", autocomplete: "name", placeholder: "Jane Doe"},
-                    {name: "companyName", label: "Corporate name", type: "text", autocomplete: "organization", placeholder: "Acme Industries Ltd"},
-                    {name: "email", label: "Corporate email address", type: "email", autocomplete: "email", placeholder: "jane.doe@acme.com"},
-                    {name: "organizationScope", label: "Organization scope", type: "text", autocomplete: "off", placeholder: "e.g. 500-1000 staff, 3 regions"}
-                ] %}
+                {# ---- Fields common to both tracks ---- #}
+                <div data-funnel-group="fullName">
+                    <label for="funnel-fullName" class="ui-form-label">Full name</label>
+                    <input type="text" id="funnel-fullName" name="fullName" data-funnel-field="fullName"
+                           autocomplete="name" placeholder="Jane Doe"
+                           aria-describedby="funnel-fullName-error"
+                           class="ui-form-input border-slate-800/20">
+                    <p id="funnel-fullName-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
 
-                {% for f in fields %}
-                    <div data-funnel-group="{{ f.name }}">
-                        <label for="funnel-{{ f.name }}" class="ui-form-label">{{ f.label }}</label>
-                        <input type="{{ f.type }}" id="funnel-{{ f.name }}" name="{{ f.name }}"
-                               data-funnel-field="{{ f.name }}" autocomplete="{{ f.autocomplete }}"
-                               placeholder="{{ f.placeholder }}"
-                               aria-describedby="funnel-{{ f.name }}-error"
-                               class="ui-form-input border-slate-800/20">
-                        <p id="funnel-{{ f.name }}-error" data-funnel-error
-                           class="mt-1 hidden text-xs text-danger"></p>
-                    </div>
-                {% endfor %}
+                {# ---- Organisation-only fields ---- #}
+                <div data-funnel-group="companyName" data-track-field="organisation">
+                    <label for="funnel-companyName" class="ui-form-label">Company name</label>
+                    <input type="text" id="funnel-companyName" name="companyName" data-funnel-field="companyName"
+                           autocomplete="organization" placeholder="Acme Industries Ltd"
+                           aria-describedby="funnel-companyName-error"
+                           class="ui-form-input border-slate-800/20">
+                    <p id="funnel-companyName-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
+
+                <div data-funnel-group="department" data-track-field="organisation">
+                    <label for="funnel-department" class="ui-form-label">Department or job title</label>
+                    <input type="text" id="funnel-department" name="department" data-funnel-field="department"
+                           autocomplete="organization-title" placeholder="Head of Delivery"
+                           aria-describedby="funnel-department-error"
+                           class="ui-form-input border-slate-800/20">
+                    <p id="funnel-department-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
+
+                {# ---- Email: label and policy follow the track ---- #}
+                <div data-funnel-group="email">
+                    <label for="funnel-email" id="funnel-email-label" class="ui-form-label">Email address</label>
+                    <input type="email" id="funnel-email" name="email" data-funnel-field="email"
+                           autocomplete="email" placeholder="jane.doe@acme.com"
+                           aria-describedby="funnel-email-error"
+                           class="ui-form-input border-slate-800/20">
+                    <p id="funnel-email-hint" class="mt-1 text-xs text-muted"></p>
+                    <p id="funnel-email-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
 
                 <div data-funnel-group="phone">
-                    <label for="funnel-phone" class="ui-form-label">Active mobile point-of-contact</label>
+                    <label for="funnel-phone" class="ui-form-label">Phone number</label>
                     <input type="tel" id="funnel-phone" name="phone" data-funnel-field="phone"
-                           autocomplete="tel" placeholder="+254 700 000 000"
+                           autocomplete="tel" placeholder="+255 700 000 000"
                            aria-describedby="funnel-phone-error"
                            class="ui-form-input border-slate-800/20">
                     <p id="funnel-phone-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
+
+                <div data-funnel-group="organizationScope" data-track-field="organisation">
+                    <label for="funnel-organizationScope" class="ui-form-label">Organisation scope</label>
+                    <input type="text" id="funnel-organizationScope" name="organizationScope" data-funnel-field="organizationScope"
+                           autocomplete="off" placeholder="e.g. 500-1000 staff, 3 regions"
+                           aria-describedby="funnel-organizationScope-error"
+                           class="ui-form-input border-slate-800/20">
+                    <p id="funnel-organizationScope-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
+
+                <div data-funnel-group="teamSize" data-track-field="organisation">
+                    <label for="funnel-teamSize" class="ui-form-label">Team size</label>
+                    <select id="funnel-teamSize" name="teamSize" data-funnel-field="teamSize"
+                            class="ui-form-input border-slate-800/20">
+                        <option value="">Select a band</option>
+                        <option value="5-15">5-15 people</option>
+                        <option value="16-50">16-50 people</option>
+                        <option value="51+">51+ people</option>
+                    </select>
+                    <p id="funnel-teamSize-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
+                </div>
+
+                <div data-funnel-group="preferredChannel">
+                    <label for="funnel-preferredChannel" class="ui-form-label">Preferred channel</label>
+                    <select id="funnel-preferredChannel" name="preferredChannel" data-funnel-field="preferredChannel"
+                            class="ui-form-input border-slate-800/20">
+                        <option value="">No preference</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="teams">Microsoft Teams</option>
+                        <option value="onsite">On site at Mikocheni B</option>
+                    </select>
+                    <p id="funnel-preferredChannel-error" data-funnel-error class="mt-1 hidden text-xs text-danger"></p>
                 </div>
             </div>
 
@@ -133,23 +225,23 @@
 
         {# ================= STEP 3: Confirmation ================= #}
         <section id="funnel-step-3" data-step="3" class="hidden">
-            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-regal/10">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-brand/10">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M5 13l4 4L19 7" stroke="#b98b6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 13l4 4L19 7" stroke="#0181C9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
 
             <h2 id="funnel-confirm-heading" class="ui-type-title mt-7"></h2>
             <p id="funnel-confirm-body" class="ui-type-body mt-4 text-sm"></p>
 
-            <dl class="mt-7 rounded-field border border-navy/10 bg-cream px-5 py-4">
+            <dl class="mt-7 rounded-field border border-brand-ink/10 bg-mist px-5 py-4">
                 <div class="flex items-center justify-between py-1.5">
                     <dt class="text-xs tracking-wide text-muted">Reference</dt>
-                    <dd id="funnel-confirm-ref" class="font-heading text-sm font-semibold text-navy"></dd>
+                    <dd id="funnel-confirm-ref" class="font-heading text-sm font-semibold text-brand-ink"></dd>
                 </div>
                 <div class="flex items-center justify-between py-1.5">
                     <dt class="text-xs tracking-wide text-muted">Engagement track</dt>
-                    <dd id="funnel-confirm-tier" class="font-heading text-sm font-semibold text-navy"></dd>
+                    <dd id="funnel-confirm-tier" class="font-heading text-sm font-semibold text-brand-ink"></dd>
                 </div>
             </dl>
 

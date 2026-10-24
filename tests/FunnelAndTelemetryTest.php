@@ -574,6 +574,58 @@ final class FunnelAndTelemetryTest extends WebTestCase
     }
 
     /**
+     * A lead submitted through a service funnel stores a Service, not an
+     * IntentTier, so the dashboard must read the offer from the service. It
+     * previously tested only intentTier and rendered every service lead as an
+     * em dash, losing what the lead was about.
+     */
+    public function testDashboardShowsTheOfferForAServiceFunnelLead(): void
+    {
+        $client = $this->client();
+        $token = $this->deckToken($client);
+
+        // Only this test's lead may be on the dashboard, or another row's
+        // em dash would satisfy the negative assertion below.
+        $this->resetInquiries();
+
+        // Seed the offer rather than depending on fixtures:load, matching the
+        // catalogue tests.
+        $em = self::getContainer()->get("doctrine")->getManager();
+        $service = $em->getRepository(\App\Entity\Service::class)
+            ->findOneBy(["slug" => "telemetry-probe-offer"]);
+        if ($service === null) {
+            $service = (new \App\Entity\Service())
+                ->setSlug("telemetry-probe-offer")
+                ->setTitle("Telemetry Probe Offer")
+                ->setTagline("A seeded offer.")
+                ->setDescription("Body.")
+                ->setPillar(\App\Enum\Pillar::Strategy)
+                ->setFunnelTrack(\App\Enum\FunnelTrack::Organisation)
+                ->setCtaLabel("Enquire");
+            $em->persist($service);
+            $em->flush();
+        }
+
+        $this->postJson($client, "/funnel/submit", [
+            "_token" => $token,
+            "service" => "telemetry-probe-offer",
+            "fullName" => "Offer Probe",
+            "companyName" => "Offer Probe Ltd",
+            "organizationScope" => "300 staff",
+            "email" => "probe@offerprobe.co.tz",
+            "phone" => "+255700000020",
+        ]);
+
+        $this->loginAsAdmin($client);
+        $client->request("GET", "/admin/telemetry");
+        $html = (string) $client->getResponse()->getContent();
+
+        self::assertStringContainsString("Telemetry Probe Offer", $html);
+        self::assertStringContainsString("Strategy &amp; Transformation", $html);
+        self::assertStringNotContainsString(">—<", $html);
+    }
+
+    /**
      * The dashboard must escape stored lead data rather than render it.
      */
     public function testDashboardEscapesStoredLeadData(): void

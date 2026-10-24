@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Service;
 use App\Enum\IntentTier;
 
 /**
@@ -23,6 +24,21 @@ final class TierValuation
         IntentTier::Mentorship->value => 12_000,
     ];
 
+    /**
+     * Indicative pipeline values by pillar, used when a lead arrives through a
+     * service funnel rather than the legacy three-tier deck.
+     *
+     * These are reporting figures, not quotes: the catalogue shows a real price
+     * only for the individually-priced PMP seat.
+     *
+     * @var array<string, int>
+     */
+    private const BY_PILLAR = [
+        'certification' => 18_500,
+        'tool-mastery' => 24_000,
+        'strategy' => 48_000,
+    ];
+
     public function forTier(?IntentTier $tier): int
     {
         if ($tier === null) {
@@ -30,5 +46,22 @@ final class TierValuation
         }
 
         return self::DEFAULTS[$tier->value] ?? 0;
+    }
+
+    /**
+     * The indicative value of a lead from a service funnel.
+     *
+     * A featured offer is weighted up: it is the flagship of its pillar and
+     * historically converts at a higher contract size.
+     */
+    public function forService(?Service $service): int
+    {
+        if ($service === null || $service->getPillar() === null) {
+            return 0;
+        }
+
+        $base = self::BY_PILLAR[$service->getPillar()->value] ?? 0;
+
+        return $service->isFeatured() ? (int) round($base * 1.25) : $base;
     }
 }

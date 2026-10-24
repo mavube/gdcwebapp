@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ service.title }} | Global Dynamics Consulting{% endblock %}
+{% block description %}{{ service.tagline }}{% endblock %}
+
+{% block body %}
+    {# ---- Service hero: 60/40 split, facts on the right ---- #}
+    <section class="ui-hero-wash">
+        <div class="ui-container ui-section grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
+            <div class="md:col-span-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ path('app_service_index') }}"
+                       class="text-xs font-semibold uppercase tracking-widest text-muted transition-colors hover:text-brand">
+                        {{ service.pillar.shortLabel }}
+                    </a>
+                    {% if service.featured %}
+                        <span class="rounded-full bg-accent/10 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-widest text-accent-deep">
+                            Flagship
+                        </span>
+                    {% endif %}
+                </div>
+
+                <h1 class="ui-type-display mt-6">{{ service.title }}</h1>
+                <p class="ui-type-body mt-8 max-w-measure text-lg">{{ service.tagline }}</p>
+
+                <div class="mt-10 flex flex-wrap items-center gap-3">
+                    {# The page's own funnel: opens the deck already scoped to this
+                       service, so its track decides the fields that follow. #}
+                    <button type="button" data-funnel-open class="ui-button ui-button-primary">
+                        {{ service.ctaLabel }}
+                    </button>
+                    <a href="#overview" class="ui-button ui-button-outline">Read the overview</a>
+                </div>
+            </div>
+
+            <aside class="md:col-span-2" aria-label="Programme details">
+                <dl class="divide-y divide-brand-ink/10 border-y border-brand-ink/10">
+                    {% if service.duration %}
+                        <div class="flex items-baseline justify-between py-5">
+                            <dt class="ui-type-label text-muted">Duration</dt>
+                            <dd class="font-heading text-sm font-bold text-brand-ink">{{ service.duration }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if service.deliveryMethod %}
+                        <div class="flex items-baseline justify-between py-5">
+                            <dt class="ui-type-label text-muted">Delivery</dt>
+                            <dd class="font-heading text-sm font-bold text-brand-ink">{{ service.deliveryMethod }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if service.pduCount %}
+                        <div class="flex items-baseline justify-between py-5">
+                            <dt class="ui-type-label text-muted">PDU accumulation</dt>
+                            <dd class="font-heading text-sm font-bold text-brand-ink">{{ service.pduCount }} PDUs</dd>
+                        </div>
+                    {% endif %}
+                    {% if service.minimumParticipants %}
+                        <div class="flex items-baseline justify-between py-5">
+                            <dt class="ui-type-label text-muted">Minimum cohort</dt>
+                            <dd class="font-heading text-sm font-bold text-brand-ink">{{ service.minimumParticipants }} participants</dd>
+                        </div>
+                    {% endif %}
+                    {% if service.priceLabel %}
+                        <div class="flex items-baseline justify-between py-5">
+                            <dt class="ui-type-label text-muted">Tariff</dt>
+                            <dd class="font-heading text-sm font-bold text-brand-ink">
+                                {{ service.priceLabel }}
+                                {% if service.priceNote %}
+                                    <span class="ml-1 text-xs font-medium text-muted">{{ service.priceNote }}</span>
+                                {% endif %}
+                            </dd>
+                        </div>
+                    {% endif %}
+                </dl>
+            </aside>
+        </div>
+    </section>
+
+    {# ---- Overview ---- #}
+    <section class="ui-section" id="overview">
+        <div class="ui-container grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-16">
+            <div class="md:col-span-2">
+                <p class="ui-type-label">Overview</p>
+                <h2 class="ui-type-headline mt-4">What this programme covers</h2>
+            </div>
+            <div class="md:col-span-3">
+                {# Autoescaped. Never apply |raw to this field: it is admin-supplied text. #}
+                <div class="ui-type-body whitespace-pre-line">{{ service.description }}</div>
+            </div>
+        </div>
+    </section>
+
+    {# ---- Sibling offers in the same pillar ---- #}
+    {% if siblings is not empty %}
+        <section class="ui-section bg-mist">
+            <div class="ui-container">
+                <p class="ui-type-label">Also in {{ service.pillar.shortLabel }}</p>
+                <h2 class="ui-type-headline mt-4">Related programmes</h2>
+
+                <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                    {% for sibling in siblings %}
+                        {% include '_partials/_service_card.html.twig' with {service: sibling, span: ''} only %}
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---- Closing call to action ---- #}
+    <section class="ui-band-ink">
+        <div class="ui-container ui-section">
+            <div class="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Next step</p>
+                    <h2 class="mt-4 font-heading text-headline font-bold text-surface max-w-2xl">
+                        Ready to talk through {{ service.title }}?
+                    </h2>
+                </div>
+                <button type="button" data-funnel-open class="ui-button ui-button-accent shrink-0">
+                    {{ service.ctaLabel }}
+                </button>
+            </div>
+        </div>
+    </section>
+{% endblock %}

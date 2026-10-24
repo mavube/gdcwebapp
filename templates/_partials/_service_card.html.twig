@@ -1,0 +1,54 @@
+{# One service card. Every string comes from the Service entity, so the card is
+   identical whether it appears on the home page, the services index or a
+   sibling strip. #}
+<article class="ui-card ui-card-interactive {{ span|default('') }}">
+    <div class="flex items-start justify-between gap-4">
+        <p class="ui-type-label">{{ service.pillar.shortLabel }}</p>
+        {% if service.featured %}
+            <span class="rounded-full bg-accent/10 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-widest text-accent-deep">
+                Flagship
+            </span>
+        {% endif %}
+    </div>
+
+    <h3 class="ui-type-title mt-4">{{ service.title }}</h3>
+    <p class="ui-type-body mt-3 flex-1 text-sm">{{ service.tagline }}</p>
+
+    {# Factual badges. Only rendered when the editor has supplied the value. #}
+    {% if service.duration or service.deliveryMethod or service.pduCount %}
+        <dl class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+            {% if service.duration %}
+                <div class="flex items-center gap-2">
+                    <dt class="text-muted">Duration</dt>
+                    <dd class="font-heading font-semibold text-brand-ink">{{ service.duration }}</dd>
+                </div>
+            {% endif %}
+            {% if service.pduCount %}
+                <div class="flex items-center gap-2">
+                    <dt class="text-muted">PDUs</dt>
+                    <dd class="font-heading font-semibold text-brand-ink">{{ service.pduCount }}</dd>
+                </div>
+            {% endif %}
+            {% if service.minimumParticipants %}
+                <div class="flex items-center gap-2">
+                    <dt class="text-muted">Min. cohort</dt>
+                    <dd class="font-heading font-semibold text-brand-ink">{{ service.minimumParticipants }}</dd>
+                </div>
+            {% endif %}
+        </dl>
+    {% endif %}
+
+    {% if service.priceLabel %}
+        <p class="mt-6 font-heading text-lg font-bold text-brand-ink">
+            {{ service.priceLabel }}
+            {% if service.priceNote %}
+                <span class="ml-2 text-xs font-medium text-muted">{{ service.priceNote }}</span>
+            {% endif %}
+        </p>
+    {% endif %}
+
+    <a href="{{ path('app_service_show', {slug: service.slug}) }}"
+       class="mt-6 inline-flex items-center gap-1 font-heading text-sm font-semibold text-brand transition-[letter-spacing] hover:tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+        {{ service.ctaLabel }} <span aria-hidden="true">&rarr;</span>
+    </a>
+</article>
