@@ -115,7 +115,7 @@
                         <thead>
                             <tr class="border-b border-slate-700/50 bg-slate-800/60">
                                 <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Organization Identity</th>
-                                <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Conversion Intent Tier</th>
+                                <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Offer &amp; Pipeline Value</th>
                                 <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Submission Timestamp</th>
                                 <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400">Progress</th>
                             </tr>
@@ -123,22 +123,40 @@
                         <tbody>
                             {% for lead in leads %}
                                 <tr class="border-b border-slate-700/30 transition-colors last:border-b-0 hover:bg-slate-800/40">
-                                    {# Organization identity: company, contact and reachability #}
+                                    {# Organization identity: company, contact and reachability.
+                                       An individual enrolment has no employer by design, so
+                                       naming the track is more truthful than "Unspecified". #}
                                     <td class="px-6 py-6 align-top">
                                         <p class="text-sm font-semibold text-white">
-                                            {{ lead.companyName ?: "Unspecified organization" }}
+                                            {%- if lead.companyName -%}
+                                                {{ lead.companyName }}
+                                            {%- elseif lead.funnelTrack and lead.funnelTrack.value == "individual" -%}
+                                                Individual enrolment
+                                            {%- else -%}
+                                                Unspecified organization
+                                            {%- endif -%}
                                         </p>
                                         <p class="mt-1 text-xs text-slate-400">{{ lead.fullName }}</p>
                                         <p class="mt-0.5 text-xs text-slate-500">{{ lead.email }}</p>
                                         {% if lead.organizationScope %}
                                             <p class="mt-1 text-xs text-slate-500">{{ lead.organizationScope }}</p>
                                         {% endif %}
+                                        {% if lead.department %}
+                                            <p class="mt-0.5 text-xs text-slate-500">{{ lead.department }}</p>
+                                        {% endif %}
                                     </td>
 
-                                    {# Intent tier, with the indicative pipeline value #}
+                                    {# What the lead is about, with the indicative pipeline value.
+                                       Service-funnel leads carry a Service rather than an
+                                       IntentTier, so fall back to the offer's own title; without
+                                       this every service lead rendered as an em dash. #}
                                     <td class="px-6 py-6 align-top">
-                                        {% if lead.intentTier %}
-                                            <p class="text-sm text-slate-200">{{ lead.intentTier.shortLabel }}</p>
+                                        {% set offerLabel = lead.service ? lead.service.title : (lead.intentTier ? lead.intentTier.shortLabel : null) %}
+                                        {% if offerLabel %}
+                                            <p class="text-sm text-slate-200">{{ offerLabel }}</p>
+                                            {% if lead.service and lead.service.pillar %}
+                                                <p class="mt-0.5 text-xs text-slate-500">{{ lead.service.pillar.shortLabel }}</p>
+                                            {% endif %}
                                             <p class="mt-1 text-xs text-slate-500">
                                                 ${{ (lead.estimatedValueUsd ?? 0)|number_format(0, ".", ",") }} indicative
                                             </p>

@@ -21,11 +21,17 @@ class CourseInquiryRepository extends ServiceEntityRepository
      * Newest first. The dashboard renders this directly, so the ordering is
      * part of the contract rather than a display concern.
      *
+     * The service is joined eagerly: the dashboard shows each lead's offer, and
+     * the association is nullable, so lazy loading would fire one extra query
+     * per service-funnel row.
+     *
      * @return list<CourseInquiry>
      */
     public function findLatest(int $limit = 100): array
     {
         return $this->createQueryBuilder("i")
+            ->addSelect("s")
+            ->leftJoin("i.service", "s")
             ->orderBy("i.createdAt", "DESC")
             ->addOrderBy("i.id", "DESC")
             ->setMaxResults($limit)

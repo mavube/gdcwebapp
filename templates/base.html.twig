@@ -1,32 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Global Dynamics Consulting{% endblock %}</title>
+    <meta name="description" content="{% block description %}PMP certification training, project management tool mastery and enterprise strategy consulting from Global Dynamics Consulting, Dar es Salaam.{% endblock %}">
+    <link rel="icon" href="{{ asset("images/favicon.svg") }}" type="image/svg+xml">
+    {# Self-hosted fonts are declared in app.css; preload the two latin faces so
+       the first paint does not wait on the stylesheet parse. #}
+    <link rel="preload" href="{{ asset("fonts/plus-jakarta-sans-400-latin.woff2") }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset("fonts/manrope-400-latin.woff2") }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset("build/app.css") }}">
 </head>
-<body class="min-h-screen bg-canvas font-sans text-navy antialiased">
+<body class="flex min-h-screen flex-col bg-surface font-sans text-brand-ink antialiased">
 
-    {# ---- 1. Global Layout Frame: sticky 80px nav, max-w-7xl anchor ---- #}
-    <header class="sticky top-0 z-50 h-20 border-b border-slate-800/10 bg-canvas/80 backdrop-blur-md">
-        <div class="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
-            <a href="{{ path("app_home") }}" class="text-base font-semibold tracking-tight text-navy">
-                Global Dynamics Consulting
+    {# ---- 1. Global layout frame ---- #}
+    <header class="sticky top-0 z-50 border-b border-brand-ink/10 bg-surface/90 backdrop-blur-md">
+        <div class="ui-container flex h-20 items-center justify-between gap-6">
+            <a href="{{ path("app_home") }}" class="flex shrink-0 items-center gap-3" aria-label="Global Dynamics Consulting, home">
+                {# The brand mark. The uploaded asset is a white knockout, so it is
+                   only legible on the dark band; on the light header we render the
+                   wordmark instead. Drop a coloured mark at images/gdc-logo.svg and
+                   this switches to it automatically. #}
+                {% if gdc_logo_available() %}
+                    <img src="{{ asset("images/gdc-logo.svg") }}" alt="Global Dynamics Consulting" class="h-9 w-auto">
+                {% else %}
+                    <span class="font-heading text-lg font-extrabold tracking-tight text-brand-ink">
+                        Global Dynamics<span class="text-accent">.</span>
+                    </span>
+                    <span class="hidden text-[0.6875rem] font-semibold uppercase tracking-widest text-muted sm:block">
+                        Consulting
+                    </span>
+                {% endif %}
             </a>
-            <a href="#inquiry" data-funnel-open
-               class="inline-flex items-center rounded-md bg-regal px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-regal focus-visible:ring-offset-2">
-                Request Briefing
-            </a>
+
+            <nav class="hidden items-center gap-8 lg:flex" aria-label="Primary">
+                <a href="{{ path("app_service_index") }}" class="text-sm font-medium text-muted transition-colors hover:text-brand">Services</a>
+                <a href="{{ path("app_home") }}#approach" class="text-sm font-medium text-muted transition-colors hover:text-brand">Approach</a>
+                <a href="{{ path("app_home") }}#contact" class="text-sm font-medium text-muted transition-colors hover:text-brand">Contact</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="tel:+255753000360" class="hidden text-sm font-semibold text-brand-ink transition-colors hover:text-brand md:block">
+                    +255 753 000 360
+                </a>
+                <button type="button" data-funnel-open class="ui-button ui-button-primary">
+                    Request briefing
+                </button>
+            </div>
         </div>
     </header>
 
-    <main class="mx-auto w-full max-w-7xl px-6">
+    <main class="flex-1">
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div role="status" class="mt-6 rounded-md border px-4 py-3 text-sm
-                     {{ label == "success" ? "border-regal/30 bg-regal/5 text-regal" : "border-red-300 bg-red-50 text-red-800" }}">
-                    {{ message }}
+                <div class="ui-container">
+                    <div role="status" class="mt-6 rounded-field border px-5 py-4 text-sm
+                         {{ label == "success" ? "border-ok/30 bg-ok/5 text-ok" : "border-danger/30 bg-danger/5 text-danger" }}">
+                        {{ message }}
+                    </div>
                 </div>
             {% endfor %}
         {% endfor %}
@@ -34,14 +66,52 @@
         {% block body %}{% endblock %}
     </main>
 
-    <footer class="mt-24 border-t border-slate-800/10">
-        <div class="mx-auto max-w-7xl px-6 py-10 text-xs tracking-wide text-slate-500">
-            &copy; {{ "now"|date("Y") }} Global Dynamics Consulting
+    {# ---- Footer: the dark band, where the white knockout mark is legible ---- #}
+    <footer class="ui-band-ink mt-24">
+        <div class="ui-container grid grid-cols-1 gap-12 py-16 md:grid-cols-4">
+            <div class="md:col-span-2">
+                <img src="{{ asset("images/gdc-logo-white.png") }}" alt="Global Dynamics Consulting" class="h-10 w-auto">
+                <p class="mt-5 max-w-measure text-sm leading-relaxed text-surface/70">
+                    Empowering businesses and professionals with training, business solutions and
+                    strategic consulting, aligning People, Processes and Purpose for Value (APPPV®).
+                </p>
+            </div>
+
+            <div>
+                <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Company</p>
+                <ul class="mt-5 space-y-3 text-sm">
+                    <li><a href="{{ path("app_service_index") }}" class="text-surface/80 transition-colors hover:text-accent">Services</a></li>
+                    <li><a href="{{ path("app_home") }}#approach" class="text-surface/80 transition-colors hover:text-accent">Approach</a></li>
+                    <li><a href="{{ path("app_home") }}#contact" class="text-surface/80 transition-colors hover:text-accent">Contact</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <p class="text-label font-semibold uppercase tracking-widest text-surface/60">Contact</p>
+                <ul class="mt-5 space-y-3 text-sm text-surface/80">
+                    <li>Mikocheni B, Light Industrial Street, House #8<br>Dar es Salaam, Tanzania</li>
+                    <li><a href="tel:+255753000360" class="transition-colors hover:text-accent">+255 753 000 360</a></li>
+                    <li><a href="mailto:info@gdc.co.tz" class="transition-colors hover:text-accent">info@gdc.co.tz</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-surface/15">
+            <div class="ui-container flex flex-col gap-3 py-6 text-xs text-surface/60 sm:flex-row sm:items-center sm:justify-between">
+                <p>&copy; {{ "now"|date("Y") }} Global Dynamics Consulting. All rights reserved.</p>
+                <p>PMI, PMP, PMBOK and ATP are registered marks of the Project Management Institute, Inc.</p>
+            </div>
         </div>
     </footer>
 
     {# ---- Conversion deck: present on every public page, opened on demand ---- #}
-    {% include "_partials/_funnel_deck.html.twig" %}
+    {% include "_partials/_funnel_deck.html.twig" with {deckService: deckService|default(null)} only %}
+
+    {# The deck's configuration, serialised for the controller. A JSON script
+       block rather than an inline script, so it needs no CSP exception.
+       JSON_HEX_TAG escapes "<" and ">", without which admin-supplied copy
+       containing "</script>" would close this block and inject markup. #}
+    <script id="funnel-config" type="application/json">{{ gdc_funnel_config(deckService|default(null))|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT'))|raw }}</script>
     <script src="{{ asset("build/funnel.js") }}" defer></script>
 </body>
 </html>

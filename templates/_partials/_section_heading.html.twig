@@ -1,0 +1,19 @@
+{# Section heading, driven by a ContentBlock rather than hard-coded copy.
+   `blocks` is the keyed map the controller passes in; when a block is missing
+   or inactive the section simply renders nothing rather than falling back to
+   copy baked into the template. #}
+{% set block = blocks[key]|default(null) %}
+
+{% if block %}
+    <div class="{{ align|default('max-w-3xl') }}">
+        {% if block.eyebrow %}
+            <p class="ui-type-label">{{ block.eyebrow }}</p>
+        {% endif %}
+        {% if block.heading %}
+            <h2 class="ui-type-headline mt-4">{{ block.heading }}</h2>
+        {% endif %}
+        {% if block.body %}
+            <p class="ui-type-body mt-5">{{ block.body }}</p>
+        {% endif %}
+    </div>
+{% endif %}

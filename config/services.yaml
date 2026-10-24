@@ -27,6 +27,12 @@ services:
         bind:
             $inquiryLimiter: '@limiter.inquiry'
 
+    # The brand extension checks the filesystem for an optional logo, so it
+    # needs the project root to resolve public/images.
+    App\Twig\BrandExtension:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     # Bind the text sanitizer by name so adding another sanitizer configuration
     # later cannot silently change which one this service receives.
     App\Service\InquirySanitizer:

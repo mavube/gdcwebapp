@@ -27,13 +27,32 @@
     const closeBtn = document.getElementById("funnel-close");
     const doneBtn = document.getElementById("funnel-done");
     const calendarLink = document.getElementById("funnel-calendar");
+    const step2Heading = document.getElementById("funnel-step-2-heading");
+    const step2Body = document.getElementById("funnel-step-2-body");
+    const emailLabel = document.getElementById("funnel-email-label");
+    const emailHint = document.getElementById("funnel-email-hint");
 
     const validateUrl = deck.dataset.validateUrl;
     const submitUrl = deck.dataset.submitUrl;
     const csrfToken = deck.dataset.csrfToken;
 
-    /** Fields audited on blur, in the order they appear. */
-    const AUDITED = ["fullName", "companyName", "email", "organizationScope", "phone"];
+    /**
+     * The server's funnel configuration, read from the JSON block in base.html.
+     * It decides which fields each track asks for; the markup for both tracks is
+     * already present, so switching is a matter of revealing the right groups.
+     */
+    let config = {};
+    try {
+        const node = document.getElementById("funnel-config");
+        if (node) config = JSON.parse(node.textContent || "{}");
+    } catch {
+        // A malformed config must not break the page; the deck then behaves as
+        // the organisation track, which is the server's default.
+        config = {};
+    }
+
+    /** Fields audited on blur. Organisation-only fields are added per track. */
+    const BASE_AUDITED = ["fullName", "email", "phone"];
 
     /** Tracks the outcome of the last blur audit per field. */
     const fieldState = Object.create(null);
@@ -51,6 +70,48 @@
         const group = groupEl(name);
         return group ? group.querySelector("[data-funnel-error]") : null;
     };
+
+    /** The track currently selected, falling back to the server's default. */
+    function currentTrack() {
+        const slug = selectedTier();
+        const fromMap = slug && config.tracks ? config.tracks[slug] : null;
+        return fromMap || config.track || "organisation";
+    }
+
+    /** The fields the current track collects. */
+    function auditedFields() {
+        const track = currentTrack();
+        const groups = track === "individual" ? [] : ["companyName", "department", "organizationScope"];
+        return [...BASE_AUDITED, ...groups];
+    }
+
+    /**
+     * Shows the field groups belonging to the selected track and hides the rest.
+     *
+     * Groups are matched on data-track-field; anything without the attribute is
+     * shown for every track. Hidden inputs are disabled so the browser does not
+     * submit a stale value the track never asked for.
+     */
+    function applyTrack() {
+        const track = currentTrack();
+        const copy = (config.copy && config.copy[track]) || {};
+
+        deck.querySelectorAll("[data-track-field]").forEach((group) => {
+            const belongs = group.dataset.trackField === track;
+            group.classList.toggle("hidden", !belongs);
+            group.querySelectorAll("input, select, textarea").forEach((input) => {
+                input.disabled = !belongs;
+            });
+        });
+
+        if (step2Heading && copy.heading) step2Heading.textContent = copy.heading;
+        if (step2Body && copy.body) step2Body.textContent = copy.body;
+        if (emailLabel && copy.emailLabel) emailLabel.textContent = copy.emailLabel;
+        if (emailHint) emailHint.textContent = copy.emailHint || "";
+
+        // A field hidden by a track change must not keep an error on screen.
+        clearAllMarks();
+    }
 
     /** Applies the crimson border + inline message for one field. */
     function markInvalid(name, message) {
@@ -86,10 +147,11 @@
     }
 
     function clearAllMarks() {
-        AUDITED.forEach((name) => {
-            markValid(name);
-            fieldState[name] = undefined;
-        });
+        ["fullName", "companyName", "department", "email", "phone", "organizationScope", "teamSize", "preferredChannel"]
+            .forEach((name) => {
+                markValid(name);
+                fieldState[name] = undefined;
+            });
     }
 
     function showAlert(message) {
@@ -163,10 +225,12 @@
         deck.querySelectorAll('input[type="radio"][name="intentTier"]').forEach((radio) => {
             radio.checked = false;
         });
-        AUDITED.forEach((name) => {
-            const input = fieldEl(name);
-            if (input) input.value = "";
-        });
+        ["fullName", "companyName", "department", "email", "phone", "organizationScope", "teamSize", "preferredChannel"]
+            .forEach((name) => {
+                const input = fieldEl(name);
+                if (input) input.value = "";
+            });
+        applyTrack();
         setBusy(false);
     }
 
@@ -241,9 +305,17 @@
         }
 
         const payload = { intentTier: selectedTier(), _token: csrfToken };
-        AUDITED.forEach((name) => {
+        // The slug in intentTier identifies the service; the server reads its
+        // track. Sending it explicitly too keeps the request self-describing.
+        if (deck.dataset.service) payload.service = deck.dataset.service;
+        auditedFields().forEach((name) => {
             const input = fieldEl(name);
-            if (input) payload[name] = input.value.trim();
+            if (input && !input.disabled) payload[name] = input.value.trim();
+        });
+        // Team size and channel are collected for every track that asks.
+        ["teamSize", "preferredChannel"].forEach((name) => {
+            const input = fieldEl(name);
+            if (input && !input.disabled && input.value) payload[name] = input.value.trim();
         });
 
         setBusy(true);
@@ -272,7 +344,7 @@
                 });
                 // Send the prospect back to the step that owns the first error.
                 const firstBad = Object.keys(data.errors)[0];
-                setStep(AUDITED.includes(firstBad) ? 2 : 1);
+                setStep(auditedFields().includes(firstBad) || firstBad === 'teamSize' || firstBad === 'preferredChannel' ? 2 : 1);
             }
 
             showAlert(data.message ?? "Something went wrong. Please try again.");
@@ -318,6 +390,9 @@
     deck.querySelectorAll('input[type="radio"][name="intentTier"]').forEach((radio) => {
         radio.addEventListener("change", () => {
             if (toStep2) toStep2.disabled = false;
+            // Switching offer switches funnel shape: an individual enrolment must
+            // not keep asking for a company name.
+            applyTrack();
         });
     });
 
@@ -327,7 +402,7 @@
         "focusout",
         (event) => {
             const name = event.target?.dataset?.funnelField;
-            if (name && AUDITED.includes(name)) auditField(name);
+            if (name && auditedFields().includes(name)) auditField(name);
         },
         true,
     );
@@ -355,6 +430,23 @@
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && isOpen) closeDeck();
     });
+
+    // ------------------------------------------------------------- initial state
+
+    // On a service page the deck is already scoped to that offer, so pre-select
+    // it. The prospect then lands on the right funnel shape without choosing
+    // twice. On pages with no service, nothing is selected and step 1 asks.
+    if (deck.dataset.service) {
+        const preset = deck.querySelector(`input[type="radio"][name="intentTier"][value="${CSS.escape(deck.dataset.service)}"]`);
+        if (preset) {
+            preset.checked = true;
+            if (toStep2) toStep2.disabled = false;
+        }
+    }
+
+    // Hide the field groups the selected track does not ask for before first
+    // paint of the deck, so an individual enrolee never sees a company field.
+    applyTrack();
 
     // Any element on the page may open the deck via [data-funnel-open].
     document.querySelectorAll("[data-funnel-open]").forEach((trigger) => {

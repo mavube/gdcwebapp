@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% set intro = blocks['services.intro']|default(null) %}
+
+{% block title %}Services | Global Dynamics Consulting{% endblock %}
+
+{% block body %}
+    <section class="ui-hero-wash">
+        <div class="ui-container ui-section">
+            {% if intro and intro.eyebrow %}<p class="ui-type-label">{{ intro.eyebrow }}</p>{% endif %}
+            <h1 class="ui-type-display mt-6 max-w-4xl">
+                {{ intro and intro.heading ? intro.heading : 'Programmes, tools and advisory' }}
+            </h1>
+            {% if intro and intro.body %}
+                <p class="ui-type-body mt-8 max-w-measure text-lg">{{ intro.body }}</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="ui-section">
+        <div class="ui-container">
+            {% for pillar in pillars %}
+                {% set offers = grouped[pillar.value]|default([]) %}
+
+                {% if offers is not empty %}
+                    <div class="{{ not loop.first ? 'mt-20 border-t border-brand-ink/10 pt-16' : '' }}">
+                        <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+                            <h2 class="ui-type-headline">{{ pillar.label }}</h2>
+                            <p class="text-sm text-muted">{{ offers|length }} {{ offers|length == 1 ? 'programme' : 'programmes' }}</p>
+                        </div>
+                        <p class="ui-type-body mt-4 max-w-measure">{{ pillar.blurb }}</p>
+
+                        <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                            {% for service in offers %}
+                                {% include '_partials/_service_card.html.twig' with {
+                                    service: service,
+                                    span: service.featured ? 'md:col-span-2' : ''
+                                } only %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="ui-type-body max-w-measure">
+                    The catalogue is being finalised. Request a briefing and we will send the
+                    current programme list directly.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
