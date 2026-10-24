@@ -222,6 +222,17 @@ silently buy the individual-track exemptions.
 
 ## Testing notes
 
+- The first run on a fresh clone needs the test schema, because `var/test.db` is
+  git-ignored and PHPUnit does not create it. `doctrine:database:create` does
+  **not** work for SQLite ("Operation ... is not supported by platform"), and
+  the driver creates the *file* on connect but not the tables. Migrate instead:
+
+  ```bash
+  env -u DATABASE_URL APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+  ```
+
+  Without this the suite fails with `no such table: gdc_admin_users`. Re-running
+  it is safe; it is a no-op once the schema is current.
 - The rate limiter is backed by `cache.rate_limiter`, which persists across
   tests. Clear that pool between tests or the sixth submission in a suite gets a
   `429`.
