@@ -1,0 +1,59 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * Rebuild the test database from the migrations, then run PHPUnit.
+ *
+ * The two steps have to happen together. `doctrine:schema:create` writes no
+ * `doctrine_migration_versions` rows, so a database built that way is invisible
+ * to the migration system and silently skips later migrations — which then
+ * surfaces as a "no such column" error that looks like a code bug.
+ *
+ * The child environment is built explicitly, with `DATABASE_URL` removed, so
+ * `.env.test` supplies the test database. Relying on the caller's shell is not
+ * safe: an exported `DATABASE_URL` wins over `.env.test`, and `env -u` does not
+ * exist in PowerShell. Passing an argument array to proc_open also avoids shell
+ * quoting differences between Windows and Unix.
+ */
+
+$root = dirname(__DIR__);
+$testDatabase = $root.'/var/test.db';
+
+$env = getenv();
+$env['APP_ENV'] = 'test';
+// Let .env.test supply the test database URL. If this were inherited, the
+// suite would target whatever the caller's shell points at.
+unset($env['DATABASE_URL']);
+
+if (is_file($testDatabase)) {
+    unlink($testDatabase);
+}
+
+/** @var list<list<string>> $steps */
+$steps = [
+    [PHP_BINARY, $root.'/bin/console', 'doctrine:migrations:migrate', '--no-interaction', '--env=test'],
+    [PHP_BINARY, $root.'/bin/phpunit'],
+];
+
+foreach ($steps as $command) {
+    $process = proc_open(
+        $command,
+        [0 => STDIN, 1 => STDOUT, 2 => STDERR],
+        $pipes,
+        $root,
+        $env,
+    );
+
+    if (!\is_resource($process)) {
+        fwrite(STDERR, 'Could not start: '.implode(' ', $command).PHP_EOL);
+        exit(1);
+    }
+
+    $exitCode = proc_close($process);
+
+    if ($exitCode !== 0) {
+        exit($exitCode);
+    }
+}
